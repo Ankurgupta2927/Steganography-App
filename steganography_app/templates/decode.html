@@ -1,44 +1,465 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Decode Message</title>
+    <title>SteganoGuard | Decode Message</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --dark-color: #2e59d9;
+            --light-color: #f8f9fc;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --info-color: #36b9cc;
+        }
+        body {
+            background-color: var(--light-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: var(--dark-color) !important;
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--info-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .main-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(28, 200, 138, 0.25);
+            border-color: var(--secondary-color);
+        }
+        .btn-custom-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-dark {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-primary:hover, .btn-custom-secondary:hover, .btn-custom-dark:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            color: white;
+        }
+        .message-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .message-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .file-type-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+        .secure-key-alert {
+            background-color: #e8f4fd;
+            border-left: 5px solid var(--info-color);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        .message-content {
+            background-color: #f8f9fc;
+            border-radius: 10px;
+            padding: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-word;
+        }
+        .message-success {
+            border-left: 5px solid var(--secondary-color);
+        }
+        .message-error {
+            border-left: 5px solid var(--danger-color);
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        .message-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="card shadow p-4">
-            <h1 class="text-center mb-4">Decode a Secret Message</h1>
-            <form action="/decode/" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label">Upload Image:</label>
-                    <input type="file" name="image" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Secure Key:</label>
-                    <input type="text" name="secure_key" class="form-control" placeholder="Enter the secure key for this image">
-                    <small class="text-muted">Enter the secure key that was used to encode this image. If the image was encoded without a key, you can leave this empty.</small>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Decode</button>
-            </form>
-        </div>
-
-        {% if message %}
-            <div class="card mt-4 p-4 text-center shadow">
-                <h2>Decoded Message:</h2>
-                {% if "ERROR:" in message %}
-                    <p class="alert alert-danger">{{ message }}</p>
-                {% else %}
-                    <p class="alert alert-info">{{ message }}</p>
-                {% endif %}
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-success mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-        {% endif %}
-        
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-dark">Home</a>
-            <a href="{% url 'encode' %}" class="btn btn-secondary">Go to Encode</a>
+            <h5>Decoding your file...</h5>
+            <p class="text-muted mb-0">This may take a few moments</p>
         </div>
     </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-lock me-2"></i>SteganoGuard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/encode/">Encode</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/decode/">Decode</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container text-center">
+            <h1 class="fw-bold"><i class="fas fa-unlock me-2"></i>Decode a Secret Message</h1>
+            <p class="lead">Extract hidden information from steganographic files</p>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card main-card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-search me-2 text-success"></i>Extract Hidden Message</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="/decode/" method="post" enctype="multipart/form-data" id="decodeForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select File Type:</label>
+                                <div class="row g-3">
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="form-check custom-radio">
+                                            <input class="form-check-input" type="radio" name="file_type" id="imageType" value="image" checked onclick="updateFileInput()">
+                                            <label class="form-check-label" for="imageType">
+                                                <i class="fas fa-image text-primary file-type-icon"></i>Image
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="file_type" id="audioType" value="audio" onclick="updateFileInput()">
+                                            <label class="form-check-label" for="audioType">
+                                                <i class="fas fa-music text-warning file-type-icon"></i>Audio
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="file_type" id="textType" value="text" onclick="updateFileInput()">
+                                            <label class="form-check-label" for="textType">
+                                                <i class="fas fa-file-alt text-info file-type-icon"></i>Text
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="file_type" id="videoType" value="video" onclick="updateFileInput()">
+                                            <label class="form-check-label" for="videoType">
+                                                <i class="fas fa-video text-danger file-type-icon"></i>Video
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Upload File:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success text-white">
+                                        <i class="fas fa-upload"></i>
+                                    </span>
+                                    <input type="file" name="file" id="fileInput" class="form-control" required>
+                                </div>
+                                <small id="fileTypeInfo" class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>Upload an image file that contains a hidden message.
+                                </small>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Secure Key:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-info text-white">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    <input type="text" name="secure_key" class="form-control" placeholder="Enter the secure key for this file">
+                                </div>
+                                <div class="secure-key-alert mt-2">
+                                    <i class="fas fa-info-circle me-2"></i>Enter the secure key that was used to encode this file. If the file was encoded without a key, you can leave this empty.
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-custom-secondary w-100" onclick="showLoading()">
+                                    <i class="fas fa-unlock me-2"></i>Decode Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <!-- Message Card -->
+                {% if message %}
+                    <div class="message-card">
+                        <div class="card-header {% if 'ERROR:' in message %}bg-danger{% else %}bg-success{% endif %} text-white">
+                            <h4 class="mb-0">
+                                {% if "ERROR:" in message %}
+                                    <i class="fas fa-exclamation-circle me-2"></i>Decoding Error
+                                {% else %}
+                                    <i class="fas fa-check-circle me-2"></i>Hidden Message Found
+                                {% endif %}
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">
+                                {% if "ERROR:" in message %}
+                                    The message could not be decoded
+                                {% else %}
+                                    Decoded Message:
+                                {% endif %}
+                            </h5>
+                            
+                            <div class="message-content {% if 'ERROR:' in message %}message-error{% else %}message-success{% endif %}">
+                                <p id="messageText" class="mb-0">{{ message }}</p>
+                            </div>
+                            
+                            {% if not "ERROR:" in message %}
+                                <div class="message-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="copyMessage()">
+                                        <i class="fas fa-copy me-1"></i>Copy Message
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="downloadMessage()">
+                                        <i class="fas fa-download me-1"></i>Save as Text
+                                    </button>
+                                </div>
+                            {% endif %}
+                            
+                            {% if "ERROR:" in message and "secure key" in message %}
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-key me-2"></i>This file requires a secure key for decoding. Please enter the correct key and try again.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card main-card h-100">
+                        <div class="card-body p-4">
+                            <div class="text-center py-5">
+                                <div class="display-1 text-muted mb-4">
+                                    <i class="fas fa-unlock"></i>
+                                </div>
+                                <h4 class="text-muted mb-3">Ready to reveal a secret?</h4>
+                                <p class="text-muted">Upload a file containing a hidden message to decode it.</p>
+                                <hr class="my-4">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>Tips for successful decoding:
+                                    <ul class="mb-0 text-start">
+                                        <li>Select the correct file type</li>
+                                        <li>Enter the secure key if one was used</li>
+                                        <li>Make sure you're using the original encoded file</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-custom-dark me-2">
+                <i class="fas fa-home me-2"></i>Home
+            </a>
+            <a href="{% url 'encode' %}" class="btn btn-custom-primary">
+                <i class="fas fa-lock me-2"></i>Go to Encode
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>© 2025 SteganoGuard - Secure Steganography Application</p>
+            <p class="mb-0">Developed for information security and privacy</p>
+        </div>
+    </footer>
+
+    <script>
+    function copyMessage() {
+        const messageElement = document.getElementById('messageText');
+        const message = messageElement.textContent;
+        
+        navigator.clipboard.writeText(message).then(() => {
+            // Change button text temporarily
+            const copyBtn = event.target.closest('button');
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+            copyBtn.classList.add('btn-success');
+            copyBtn.classList.remove('btn-outline-primary');
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-primary');
+            }, 2000);
+        }).catch(err => {
+            console.error('Could not copy message: ', err);
+            alert('Failed to copy message to clipboard');
+        });
+    }
+    
+    function downloadMessage() {
+        const messageElement = document.getElementById('messageText');
+        const message = messageElement.textContent;
+        
+        // Create a blob with the message content
+        const blob = new Blob([message], {type: 'text/plain'});
+        const url = URL.createObjectURL(blob);
+        
+        // Create a temporary link to download the file
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'decoded_message.txt';
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+    
+    function updateFileInput() {
+        const fileType = document.querySelector('input[name="file_type"]:checked').value;
+        const fileInput = document.getElementById('fileInput');
+        const fileTypeInfo = document.getElementById('fileTypeInfo');
+        
+        // Update the file input accept attribute based on the selected file type
+        switch(fileType) {
+            case 'image':
+                fileInput.accept = '.jpg,.jpeg,.png,.gif,.bmp';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Upload an image file that contains a hidden message.';
+                break;
+            case 'audio':
+                fileInput.accept = '.wav';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Upload a WAV audio file that contains a hidden message.';
+                break;
+            case 'text':
+                fileInput.accept = '.txt,.html,.css,.js,.md';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Upload a text file that contains a hidden message.';
+                break;
+            case 'video':
+                fileInput.accept = '.mp4,.avi,.mov';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Upload a video file that contains a hidden message.';
+                break;
+        }
+    }
+    
+    function showLoading() {
+        // Only show loading if the form is valid
+        if (document.getElementById('decodeForm').checkValidity()) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateFileInput();
+    });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
