@@ -14,6 +14,11 @@
                     <label class="form-label">Upload Image:</label>
                     <input type="file" name="image" class="form-control" required>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Secure Key:</label>
+                    <input type="text" name="secure_key" class="form-control" placeholder="Enter the secure key for this image">
+                    <small class="text-muted">Enter the secure key that was used to encode this image. If the image was encoded without a key, you can leave this empty.</small>
+                </div>
                 <button type="submit" class="btn btn-primary w-100">Decode</button>
             </form>
         </div>
@@ -21,7 +26,11 @@
         {% if message %}
             <div class="card mt-4 p-4 text-center shadow">
                 <h2>Decoded Message:</h2>
-                <p class="alert alert-info">{{ message }}</p>
+                {% if "ERROR:" in message %}
+                    <p class="alert alert-danger">{{ message }}</p>
+                {% else %}
+                    <p class="alert alert-info">{{ message }}</p>
+                {% endif %}
             </div>
         {% endif %}
         

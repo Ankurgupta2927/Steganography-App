@@ -17,6 +17,7 @@ def encode_message(request):
     if request.method == 'POST' and request.FILES['image']:
         image = request.FILES['image']
         message = request.POST['message']
+        secure_key = request.POST.get('secure_key', '')  # Get secure key from form
 
         fs = FileSystemStorage(location=MEDIA_DIR)
         filename = fs.save(image.name, image)
@@ -27,11 +28,13 @@ def encode_message(request):
 
         img = Image.open(converted_img_path)
         encoded_img_path = os.path.join(MEDIA_DIR, "encoded_" + os.path.basename(converted_img_path))
-        encode_image(img, message, encoded_img_path)
+        used_key = encode_image(img, message, encoded_img_path, secure_key)
 
         return render(request, 'encode.html', {
             'encoded_img_path': f'/media/encoded_{os.path.basename(converted_img_path)}',
-            'download_url': f'/download/{quote(os.path.basename(encoded_img_path))}'
+            'download_url': f'/download/{quote(os.path.basename(encoded_img_path))}',
+            'secure_key': used_key,  # Return the secure key to the user
+            'message_encoded': True  # Flag to indicate successful encoding
         })
     
     return render(request, 'encode.html')
@@ -50,23 +53,29 @@ def convert_to_png(img_path):
 def decode_message(request):
     if request.method == 'POST' and request.FILES['image']:
         image = request.FILES['image']
+        secure_key = request.POST.get('secure_key', '')  # Get secure key from form
 
         fs = FileSystemStorage(location=MEDIA_DIR)
         filename = fs.save(image.name, image)
         img_path = os.path.join(MEDIA_DIR, filename)
 
         img = Image.open(img_path)
-        message = decode_image(img)
+        message = decode_image(img, secure_key)  # Pass the secure key to the decode function
 
         return render(request, 'decode.html', {'message': message})
     
     return render(request, 'decode.html')
 
 # Function to encode a message using LSB (Least Significant Bit) in the Red channel
-def encode_image(img, message, output_path):
+def encode_image(img, message, output_path, secure_key=''):
     img = img.convert('RGB')
     pixels = list(img.getdata())
 
+    # If a secure key is provided, prepend it to the message with a separator
+    if secure_key:
+        # Format: secure_key|:|message
+        message = secure_key + "|:|" + message
+    
     # Append a delimiter to indicate the end of the message
     message += "@@@"
     binary_msg = ''.join(format(ord(i), '08b') for i in message)
@@ -88,9 +97,12 @@ def encode_image(img, message, output_path):
     new_img = Image.new(img.mode, img.size)
     new_img.putdata(new_pixels)
     new_img.save(output_path)
+    
+    # Return the secure key in case it was generated here
+    return secure_key
 
 # Function to decode the hidden message from an image
-def decode_image(img):
+def decode_image(img, secure_key=''):
     pixels = list(img.getdata())
     
     # Extract LSB from the Red channel
@@ -106,7 +118,25 @@ def decode_image(img):
 
         # Stop decoding once we hit the delimiter '@@@'
         if message.endswith('@@@'):
-            return message[:-3]  # Remove the delimiter and return the message
+            full_message = message[:-3]  # Remove the delimiter
+            
+            # Check if the message uses the secure key format
+            if "|:|" in full_message:
+                parts = full_message.split("|:|", 1)
+                stored_key = parts[0]
+                actual_message = parts[1]
+                
+                # If a secure key was provided, verify it matches
+                if secure_key:
+                    if secure_key == stored_key:
+                        return actual_message
+                    else:
+                        return "ERROR: Incorrect secure key provided."
+                else:
+                    return "ERROR: This image requires a secure key to decode."
+            
+            # No secure key in the message, return as is
+            return full_message
 
     return message  # Return full message if delimiter is not found
 
