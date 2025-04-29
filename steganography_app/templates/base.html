@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Glossy Steganography{% endblock %}</title>
+    <!-- Optimized Google Fonts loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/glossy_aesthetic.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Simplified glass morphism background -->
+    <div class="glass-bg"></div>
+    <div class="container">
+        <!-- Header with glossy aesthetic styling -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <h1 class="glossy-title">STEGANO<span>GRAPHY</span></h1>
+            </div>
+            <p class="tagline">Conceal · Protect · Reveal</p>
+        </header>
+        
+        <!-- Navigation -->
+        <nav class="glass-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/encode" class="nav-link">Encode</a></li>
+                <li><a href="/decode" class="nav-link">Decode</a></li>
+            </ul>
+        </nav>
+        
+        <!-- Main content area -->
+        <main>
+            <div class="content-wrapper glass-panel">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="glass-divider"></div>
+            <p>Aesthetically crafted for digital security</p>
+        </footer>
+    </div>
+    
+    <!-- Optimized Custom JavaScript -->
+    <script src="/static/js/glossy_aesthetic.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

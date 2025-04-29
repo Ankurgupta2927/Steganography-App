@@ -1,0 +1,378 @@
+/* Glossy Aesthetic Theme - Optimized for Performance */
+:root {
+  --primary-color: #6d28d9;
+  --primary-glow: rgba(109, 40, 217, 0.5);
+  --secondary-color: #10b981;
+  --secondary-glow: rgba(16, 185, 129, 0.5);
+  --dark-color: #111827;
+  --light-color: #f9fafb;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --text-shadow: 0 0 10px rgba(109, 40, 217, 0.7);
+  --toggle-bg: rgba(255, 255, 255, 0.1);
+  --toggle-active: var(--secondary-color);
+  --toggle-inactive: rgba(255, 255, 255, 0.3);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--light-color);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* Improve performance for mobile devices */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Simplified glass background for better performance */
+.glass-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, rgba(25, 25, 40, 0.8), rgba(12, 12, 22, 1));
+  background-size: 100% 100%;
+  /* Reduced animation complexity */
+  opacity: 0.8;
+}
+
+/* Container optimization */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+  /* Improve perceived performance */
+  will-change: transform;
+}
+
+/* Fix Form Styling - especially file inputs */
+input[type="text"],
+textarea,
+select {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* FIX: Make file inputs work properly */
+input[type="file"] {
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  opacity: 1;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* Fix for custom file upload container to ensure it works */
+.file-upload-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.file-upload-container input[type="file"] {
+  opacity: 1; /* Make sure it's visible and clickable */
+  height: auto;
+  position: relative;
+  cursor: pointer;
+  display: block;
+}
+
+/* Fix hover effects for better performance */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  /* Limit animations for better performance */
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+/* Optimized button styling */
+button {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  letter-spacing: 0.05rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  will-change: transform;
+}
+
+/* Simplified button hover effect */
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Optimized card styling */
+.card {
+  background: rgba(17, 24, 39, 0.6);
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  will-change: transform;
+}
+
+/* Fix glowing elements for better performance */
+.glow-element {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px); /* Reduced blur radius */
+  z-index: -1;
+  opacity: 0.3; /* Reduced opacity */
+  /* Reduced animation complexity */
+  animation: simplifiedFloat 8s ease-in-out infinite alternate;
+}
+
+@keyframes simplifiedFloat {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(20px, 20px);
+  }
+}
+
+/* Optimized media queries for better performance on mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .glossy-title {
+    font-size: 2rem;
+    letter-spacing: 0.2rem;
+  }
+  
+  /* Disable some effects on mobile for better performance */
+  .glow-element {
+    display: none;
+  }
+  
+  .glass-bg {
+    background: #161628; /* Solid background on mobile */
+  }
+  
+  /* Ensure the file upload is full width and visible on mobile */
+  input[type="file"] {
+    width: 100%;
+    display: block;
+  }
+  
+  /* Stack nav items for mobile */
+  .glass-nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .glass-nav li {
+    margin: 0.5rem 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .nav-link {
+    display: block;
+    width: 100%;
+  }
+}
+
+/* Fix specific file upload for Firefox */
+@-moz-document url-prefix() {
+  input[type="file"] {
+    opacity: 1;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+  }
+}
+
+/* Simplified and faster loading animation */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: fastSpin 0.6s linear infinite;
+  margin: 1rem auto;
+}
+
+@keyframes fastSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Add clear file input styling to ensure it's always accessible */
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+.file-input-wrapper input[type="file"] {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  height: auto;
+  opacity: 1;
+  z-index: 5;
+}
+
+/* Fix for any hidden file inputs */
+input[type="file"].hidden-file-input {
+  opacity: 1 !important;
+  position: relative !important;
+  height: auto !important;
+  cursor: pointer !important;
+  display: block !important;
+  z-index: 10 !important;
+}
+
+/* Enhanced Language Toggle Switch Styling for better visibility */
+.language-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 12px 20px;
+  border-radius: 30px;
+  backdrop-filter: blur(10px);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 15px var(--primary-glow), var(--glass-shadow);
+  animation: pulseBorder 2s infinite alternate;
+}
+
+@keyframes pulseBorder {
+  from { box-shadow: 0 0 15px var(--primary-glow), var(--glass-shadow); }
+  to { box-shadow: 0 0 25px var(--primary-glow), var(--glass-shadow); }
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  margin: 0 10px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: .4s;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--secondary-color);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(30px);
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  margin: 0 5px;
+  user-select: none;
+}
+
+/* Language specific classes */
+/* English is default, these classes apply when Hinglish is active */
+.hinglish-text {
+  display: none;
+}
+
+body.hinglish-mode .english-text {
+  display: none;
+}
+
+body.hinglish-mode .hinglish-text {
+  display: inline-block;
+}
+
+/* Fix for language toggle on mobile */
+@media (max-width: 768px) {
+  .language-toggle {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: 10px auto;
+    justify-content: center;
+    width: fit-content;
+  }
+}
