@@ -1,0 +1,328 @@
+/* SteganoGuard Theme System - Light & Dark Mode */
+
+:root {
+    /* Light Mode Colors (default) */
+    --primary-color: #4e73df;
+    --secondary-color: #1cc88a;
+    --dark-color: #2e59d9;
+    --light-color: #f8f9fc;
+    --danger-color: #e74a3b;
+    --warning-color: #f6c23e;
+    --info-color: #36b9cc;
+    
+    /* Light Theme Variables */
+    --body-bg: var(--light-color);
+    --text-color: #2c3e50;
+    --text-muted: #6c757d;
+    --card-bg: #ffffff;
+    --card-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    --input-bg: #f8fafc;
+    --input-border: #e2e8f0;
+    --navbar-bg: var(--dark-color);
+    --navbar-text: #ffffff;
+    --footer-bg: #2c3e50;
+    --footer-text: #ffffff;
+    --header-gradient-start: var(--primary-color);
+    --header-gradient-end: var(--dark-color);
+    --form-check-bg: #ffffff;
+    --message-content-bg: #f8f9fc;
+    --hr-color: rgba(0,0,0,0.1);
+    --feature-card-bg: #ffffff;
+    --secure-key-alert-bg: #fcf8e3;
+    --bg-light: #f8f9fc;
+}
+
+/* Dark Theme Variables */
+[data-theme="dark"] {
+    --primary-color: #5a78e2;
+    --secondary-color: #2ed8a2;
+    --dark-color: #3462e0;
+    --light-color: #1a1d29;
+    --danger-color: #ff5a5a;
+    --warning-color: #ffbd2e;
+    --info-color: #3dc5d4;
+    
+    /* Dark Theme Specific */
+    --body-bg: #0f1219;
+    --text-color: #e2e8f0;
+    --text-muted: #a0aec0;
+    --card-bg: #1a1d29;
+    --card-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    --input-bg: #262c3a;
+    --input-border: #374151;
+    --navbar-bg: #171b26;
+    --navbar-text: #ffffff;
+    --footer-bg: #171b26;
+    --footer-text: #cbd5e0;
+    --header-gradient-start: #3462e0;
+    --header-gradient-end: #1d2c64;
+    --form-check-bg: #262c3a;
+    --message-content-bg: #262c3a;
+    --hr-color: rgba(255,255,255,0.1);
+    --feature-card-bg: #1a1d29;
+    --secure-key-alert-bg: #2d2c1d;
+    --bg-light: #1a1d29;
+}
+
+/* Core Styling */
+body {
+    background-color: var(--body-bg) !important;
+    color: var(--text-color) !important;
+    transition: all 0.3s ease;
+}
+
+/* Text Styling */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, div, label, small, strong, a:not(.btn), li {
+    color: var(--text-color);
+}
+
+.feature-icon, .text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-success {
+    color: var(--secondary-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+/* Background Styling */
+.bg-light {
+    background-color: var(--bg-light) !important;
+}
+
+/* Navigation */
+.navbar {
+    background-color: var(--navbar-bg) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: var(--navbar-text);
+}
+
+/* Cards and Containers */
+.card, .main-card, .result-card, .message-card, .feature-card {
+    background-color: var(--card-bg) !important;
+    box-shadow: var(--card-shadow);
+    color: var(--text-color);
+}
+
+.card-header:not(.bg-success):not(.bg-danger):not(.bg-primary):not(.bg-warning):not(.bg-info) {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--hr-color);
+    color: var(--text-color);
+}
+
+/* Headers & Sections */
+.page-header {
+    background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%) !important;
+}
+
+/* Form Elements */
+.form-control, .form-select, textarea, input[type="text"], input[type="file"] {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+.input-group-text:not(.bg-primary):not(.bg-success):not(.bg-warning):not(.bg-info) {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-check-input {
+    background-color: var(--form-check-bg);
+    border-color: var(--input-border);
+}
+
+.form-check-label {
+    color: var(--text-color);
+}
+
+/* Custom Components */
+.secure-key-alert {
+    background-color: var(--secure-key-alert-bg) !important;
+    border-left: 5px solid var(--warning-color);
+    color: var(--text-color);
+}
+
+.message-content {
+    background-color: var(--message-content-bg);
+    color: var(--text-color);
+}
+
+/* List Group */
+.list-group-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
+}
+
+/* Buttons and Links */
+.btn-outline-primary, .btn-outline-secondary, .btn-outline-dark {
+    color: var(--text-color) !important;
+    border-color: var(--input-border) !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-secondary:hover, .btn-outline-dark:hover {
+    color: white !important;
+}
+
+hr {
+    border-color: var(--hr-color);
+}
+
+/* Footer styling */
+.footer {
+    background-color: var(--footer-bg);
+}
+
+/* Explicitly set footer text color to ensure visibility */
+.footer p, 
+.footer div, 
+.footer span, 
+.footer a:not(.btn),
+.footer h1, 
+.footer h2, 
+.footer h3, 
+.footer h4, 
+.footer h5, 
+.footer h6, 
+.footer small, 
+.footer strong {
+    color: var(--footer-text) !important;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.theme-toggle i {
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+/* Alerts */
+.alert-info {
+    background-color: rgba(54, 185, 204, 0.2);
+    border-color: rgba(54, 185, 204, 0.3);
+    color: var(--text-color);
+}
+
+.alert-warning {
+    background-color: rgba(246, 194, 62, 0.2);
+    border-color: rgba(246, 194, 62, 0.3);
+    color: var(--text-color);
+}
+
+.alert-danger {
+    background-color: rgba(231, 74, 59, 0.2);
+    border-color: rgba(231, 74, 59, 0.3);
+    color: var(--text-color);
+}
+
+.alert-success {
+    background-color: rgba(28, 200, 138, 0.2);
+    border-color: rgba(28, 200, 138, 0.3);
+    color: var(--text-color);
+}
+
+/* Loading Overlay */
+.loading-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+/* File Upload - Fix for dark mode */
+[data-theme="dark"] input[type="file"]::file-selector-button {
+    background-color: var(--input-border);
+    color: var(--text-color);
+    border-color: var(--input-border);
+}
+
+/* Fix for hover states on file inputs in dark mode */
+[data-theme="dark"] input[type="file"]:hover::file-selector-button {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Additional fixes for form elements in dark mode */
+[data-theme="dark"] .custom-file-label::after {
+    background-color: var(--input-border);
+    color: var(--text-color);
+}
+
+/* Ensure all buttons have proper contrast in dark mode */
+[data-theme="dark"] .btn:not(.btn-primary):not(.btn-secondary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info) {
+    color: var(--text-color);
+}
+
+/* Fix hover states for all buttons in dark mode */
+[data-theme="dark"] .btn:hover {
+    color: white !important;
+}
+
+/* Custom select elements in dark mode */
+[data-theme="dark"] select option {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* Dropdown menus in dark mode */
+[data-theme="dark"] .dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: var(--input-border);
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* Specific Feature Cards Styling */
+.feature-card {
+    background-color: var(--feature-card-bg) !important;
+}

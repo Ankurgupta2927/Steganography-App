@@ -1,0 +1,389 @@
+/* Indian Disney-inspired Theme */
+:root {
+  --primary-color: #FF9933; /* Saffron from Indian flag */
+  --secondary-color: #138808; /* Green from Indian flag */
+  --accent-color: #000080; /* Navy blue from Indian flag chakra */
+  --background-color: #f8f4e9; /* Light cream background */
+  --text-color: #333;
+  --border-radius: 12px;
+  --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+body {
+  background-color: var(--background-color);
+  background-image: url('../images/rangoli_pattern.png');
+  background-attachment: fixed;
+  background-size: 300px;
+  background-blend-mode: overlay;
+  font-family: 'Poppins', 'Arial', sans-serif;
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header Styling */
+.header {
+  text-align: center;
+  padding: 30px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header h1 {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  animation: titleGlow 3s infinite alternate;
+}
+
+.header p {
+  font-size: 1.2rem;
+  color: var(--secondary-color);
+  animation: fadeInUp 1s ease-out;
+}
+
+/* Card Styling */
+.card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 25px;
+  margin-bottom: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  background-image: linear-gradient(135deg, #ffffff 50%, #f7f7f7 100%);
+}
+
+.card:before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border: 2px dashed var(--primary-color);
+  border-radius: calc(var(--border-radius) + 10px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  animation: borderPulse 2s infinite alternate;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card h2 {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--secondary-color);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+/* Form Styling */
+.form-group {
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+input[type="text"],
+input[type="file"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.2);
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transition: left 0.6s ease;
+}
+
+button:hover {
+  background-color: #e58728;
+  transform: translateY(-2px);
+}
+
+button:hover::after {
+  left: 100%;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Download button special styling */
+.download-btn {
+  background-color: var(--secondary-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.download-btn:hover {
+  background-color: #0e6c06;
+}
+
+/* Message box styling */
+.message-box {
+  padding: 20px;
+  background-color: #fff;
+  border-left: 5px solid var(--primary-color);
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+  margin: 20px 0;
+  box-shadow: var(--box-shadow);
+  animation: slideInRight 0.5s ease-out;
+}
+
+.error-message {
+  border-left-color: #d9534f;
+}
+
+/* Footer styling */
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+  border-top: 1px solid #ddd;
+  color: #777;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes borderPulse {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes titleGlow {
+  0% {
+    text-shadow: 0 0 5px rgba(255, 153, 51, 0.1);
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(255, 153, 51, 0.6), 0 0 35px rgba(255, 153, 51, 0.4);
+  }
+}
+
+/* Peacock feather decoration */
+.peacock-decoration {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background-image: url('../images/peacock-feather.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.peacock-top-right {
+  top: 20px;
+  right: 20px;
+  transform: rotate(45deg);
+}
+
+.peacock-bottom-left {
+  bottom: 20px;
+  left: 20px;
+  transform: rotate(-45deg);
+}
+
+/* File upload custom styling */
+.file-upload-container {
+  position: relative;
+  padding: 30px;
+  border: 2px dashed var(--primary-color);
+  border-radius: var(--border-radius);
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.file-upload-container:hover {
+  border-color: var(--secondary-color);
+  background-color: rgba(255, 153, 51, 0.05);
+}
+
+.file-upload-container input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload-icon {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .peacock-decoration {
+    display: none;
+  }
+}
+
+/* Loading animation */
+.loading-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 20px auto;
+}
+
+.loading-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid var(--primary-color);
+  border-radius: 50%;
+  animation: loading-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: var(--primary-color) transparent transparent transparent;
+}
+
+.loading-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+
+.loading-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.loading-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+
+@keyframes loading-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Rangoli pattern animations */
+.rangoli {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.2;
+}
+
+.rangoli-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  animation: rangoliFade 3s infinite alternate;
+}
+
+@keyframes rangoliFade {
+  0% {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1.5);
+  }
+}
