@@ -1,13 +1,23 @@
 import os
+import shutil
 import wave
 import struct
 import re
 import binascii
+import json
+import time
+import numpy as np
+import base64
+from io import BytesIO
+from PIL import Image, ImageChops, ImageEnhance
+from skimage.metrics import structural_similarity
+import cv2
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
-from PIL import Image
 from django.utils.http import quote
+
+from .utils import lsb_utils, dct_utils, dwt_utils, comparison_utils
 
 # Directory for storing uploaded and processed files
 MEDIA_DIR = "media/"
@@ -21,8 +31,9 @@ def encode_message(request):
     if request.method == 'POST' and request.FILES['file']:
         file = request.FILES['file']
         message = request.POST['message']
-        secure_key = request.POST.get('secure_key', '')  # Get secure key from form
-        file_type = request.POST.get('file_type', 'image')  # Get file type selection
+        secure_key = request.POST.get('secure_key', '')
+        file_type = request.POST.get('file_type', 'image')
+        technique = request.POST.get('technique', 'LSB')
 
         fs = FileSystemStorage(location=MEDIA_DIR)
         filename = fs.save(file.name, file)
@@ -39,38 +50,84 @@ def encode_message(request):
                 # Convert image to PNG if not already in PNG format
                 converted_file_path = convert_to_png(file_path)
                 img = Image.open(converted_file_path)
-                encoded_file_path = os.path.join(MEDIA_DIR, "encoded_" + os.path.basename(converted_file_path))
-                used_key = encode_image(img, message, encoded_file_path, secure_key)
+                encoded_filename = "encoded_" + os.path.basename(converted_file_path)
+                encoded_file_path = os.path.join(MEDIA_DIR, encoded_filename)
+                
+                # Use the selected steganography technique
+                if technique.lower() == 'lsb':
+                    used_key = lsb_utils.encode_image(img, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dct':
+                    used_key = dct_utils.encode_image(img, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dwt':
+                    used_key = dwt_utils.encode_image(img, message, encoded_file_path, secure_key)
                 
             elif file_type == 'audio' or file_extension in ['.wav']:
-                encoded_file_path = os.path.join(MEDIA_DIR, "encoded_" + os.path.basename(file_path))
-                used_key = encode_audio(file_path, message, encoded_file_path, secure_key)
+                encoded_filename = "encoded_" + os.path.basename(file_path)
+                encoded_file_path = os.path.join(MEDIA_DIR, encoded_filename)
+                
+                # Use the selected steganography technique
+                if technique.lower() == 'lsb':
+                    used_key = lsb_utils.encode_audio(file_path, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dct':
+                    used_key = dct_utils.encode_audio(file_path, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dwt':
+                    used_key = dwt_utils.encode_audio(file_path, message, encoded_file_path, secure_key)
                 
             elif file_type == 'text' or file_extension in ['.txt', '.md', '.html', '.css', '.js']:
-                encoded_file_path = os.path.join(MEDIA_DIR, "encoded_" + os.path.basename(file_path))
-                used_key = encode_text(file_path, message, encoded_file_path, secure_key)
+                encoded_filename = "encoded_" + os.path.basename(file_path)
+                encoded_file_path = os.path.join(MEDIA_DIR, encoded_filename)
+                
+                # Use the selected steganography technique
+                if technique.lower() == 'lsb':
+                    used_key = lsb_utils.encode_text(file_path, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dct':
+                    used_key = dct_utils.encode_text(file_path, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dwt':
+                    used_key = dwt_utils.encode_text(file_path, message, encoded_file_path, secure_key)
                 
             elif file_type == 'video' or file_extension in ['.mp4', '.avi', '.mov']:
-                encoded_file_path = os.path.join(MEDIA_DIR, "encoded_" + os.path.basename(file_path))
-                used_key = encode_video(file_path, message, encoded_file_path, secure_key)
+                encoded_filename = "encoded_" + os.path.basename(file_path)
+                encoded_file_path = os.path.join(MEDIA_DIR, encoded_filename)
+                
+                # Use the selected steganography technique
+                if technique.lower() == 'lsb':
+                    used_key = lsb_utils.encode_video(file_path, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dct':
+                    used_key = dct_utils.encode_video(file_path, message, encoded_file_path, secure_key)
+                elif technique.lower() == 'dwt':
+                    used_key = dwt_utils.encode_video(file_path, message, encoded_file_path, secure_key)
             
             else:
                 encoding_error = f"Unsupported file type: {file_extension}"
                 
         except Exception as e:
             encoding_error = str(e)
-
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            return render(request, 'encode.html', {'error': encoding_error})
+        
+        # Clean up original file if it differs from the encoded file
+        if os.path.exists(file_path) and file_path != encoded_file_path:
+            os.remove(file_path)
+            
+        # Clean up converted file if it exists and differs from both original and encoded
+        if 'converted_file_path' in locals() and os.path.exists(converted_file_path):
+            if converted_file_path != file_path and converted_file_path != encoded_file_path:
+                os.remove(converted_file_path)
+        
         if encoding_error:
             return render(request, 'encode.html', {'error': encoding_error})
         
-        # Basename for display in template
-        encoded_file_name = os.path.basename(encoded_file_path)
+        # Get relative URL paths for template
+        encoded_file_url = f'/media/{encoded_filename}'
+        download_url = f'/download/{encoded_filename}'
         
         return render(request, 'encode.html', {
-            'encoded_file_path': f'/media/{encoded_file_name}',
-            'download_url': f'/download/{quote(encoded_file_name)}',
+            'encoded_file_path': encoded_file_url,
+            'download_url': download_url,
             'secure_key': used_key,
             'file_type': file_type,
+            'technique': technique,
             'message_encoded': True
         })
     
@@ -78,518 +135,416 @@ def encode_message(request):
 
 # Function to convert uploaded image to PNG if needed
 def convert_to_png(img_path):
+    """Convert uploaded image to PNG if needed, handling all image types"""
     img = Image.open(img_path)
-    if img.format != 'PNG':  # Convert only if not already PNG
+    if img.format != 'PNG':
+        # Convert to RGB/RGBA as needed
+        if img.mode == 'P':  # Handle palette images
+            img = img.convert('RGBA')
+        elif img.mode == 'L':  # Handle grayscale
+            img = img.convert('RGB')
+        elif img.mode not in ['RGB', 'RGBA']:  # Handle other modes
+            img = img.convert('RGB')
+            
         new_path = os.path.splitext(img_path)[0] + ".png"
-        img.convert('RGB').save(new_path, 'PNG')  # Convert and save as PNG
+        img.save(new_path, 'PNG')
         os.remove(img_path)  # Remove the original non-PNG file
         return new_path
-    return img_path  # If already PNG, return original path
+    return img_path
 
 # Decode a hidden message from a file
-def decode_message(request):
-    if request.method == 'POST' and request.FILES['file']:
-        file = request.FILES['file']
-        secure_key = request.POST.get('secure_key', '')  # Get secure key from form
-        file_type = request.POST.get('file_type', 'image')  # Get file type selection
-
-        fs = FileSystemStorage(location=MEDIA_DIR)
-        filename = fs.save(file.name, file)
-        file_path = os.path.join(MEDIA_DIR, filename)
-        file_extension = os.path.splitext(file_path)[1].lower()
-        
-        message = "Could not decode message from this file."
-        decoding_error = None
-        
+def decode(request):
+    if request.method == 'POST':
         try:
-            # Determine file type based on extension and perform appropriate decoding
-            if file_type == 'image' or file_extension in ['.jpg', '.jpeg', '.png', '.bmp', '.gif']:
-                img = Image.open(file_path)
-                message = decode_image(img, secure_key)
-                
-            elif file_type == 'audio' or file_extension in ['.wav']:
-                message = decode_audio(file_path, secure_key)
-                
-            elif file_type == 'text' or file_extension in ['.txt', '.md', '.html', '.css', '.js']:
-                message = decode_text(file_path, secure_key)
-                
-            elif file_type == 'video' or file_extension in ['.mp4', '.avi', '.mov']:
-                message = decode_video(file_path, secure_key)
-                
-            else:
-                decoding_error = f"Unsupported file type: {file_extension}"
-                
-        except Exception as e:
-            decoding_error = str(e)
+            file_type = request.POST.get('file_type')
+            technique = request.POST.get('technique')
+            secure_key = request.POST.get('secure_key', '')
+            uploaded_file = request.FILES.get('file')
             
-        if decoding_error:
-            return render(request, 'decode.html', {'error': decoding_error})
+            if not uploaded_file:
+                return render(request, 'decode.html', {'error': 'No file was uploaded'})
 
-        return render(request, 'decode.html', {'message': message})
+            # Start timing the decode operation
+            start_time = time.time()
+            
+            # Process based on file type and technique (case-insensitive)
+            technique = technique.lower()
+            if technique == 'lsb':
+                module = lsb_utils
+            elif technique == 'dct':
+                module = dct_utils
+            else:  # dwt
+                module = dwt_utils
+            
+            # Convert uploaded file to appropriate format
+            if file_type == 'image':
+                img = Image.open(uploaded_file)
+                original_img = img.copy()  # Store original for comparison
+                message = module.decode_image(img, secure_key)
+                
+                # Calculate metrics for image files
+                metrics = {
+                    'psnr': calculate_psnr(original_img, img),
+                    'ssim': calculate_ssim(original_img, img),
+                    'decode_time': time.time() - start_time,
+                    'capacity': calculate_capacity(original_img, technique)
+                }
+                
+                # Generate visual comparison data
+                context = {
+                    'message': message,
+                    'metrics': metrics,
+                    'file_type': file_type,
+                    'original_image': get_image_data_url(original_img),
+                    'stego_image': get_image_data_url(img),
+                    'diff_image': generate_difference_map(original_img, img)
+                }
+                
+            elif file_type == 'audio':
+                # Save uploaded file temporarily
+                temp_path = os.path.join(MEDIA_DIR, 'temp_audio.wav')
+                with open(temp_path, 'wb') as f:
+                    for chunk in uploaded_file.chunks():
+                        f.write(chunk)
+                
+                message = module.decode_audio(temp_path, secure_key)
+                metrics = {
+                    'decode_time': time.time() - start_time,
+                    'capacity': calculate_audio_capacity(temp_path, technique)
+                }
+                
+                os.remove(temp_path)  # Clean up
+                context = {'message': message, 'metrics': metrics, 'file_type': file_type}
+                
+            elif file_type == 'text':
+                text_content = uploaded_file.read().decode('utf-8')
+                # Save text content temporarily for techniques that require file paths
+                temp_path = os.path.join(MEDIA_DIR, 'temp_text.txt')
+                with open(temp_path, 'w', encoding='utf-8') as f:
+                    f.write(text_content)
+                
+                message = module.decode_text(temp_path, secure_key)
+                metrics = {
+                    'decode_time': time.time() - start_time,
+                    'capacity': len(text_content) // 8  # Rough estimate
+                }
+                
+                os.remove(temp_path)  # Clean up
+                context = {'message': message, 'metrics': metrics, 'file_type': file_type}
+                
+            else:  # video
+                # Save uploaded file temporarily
+                temp_path = os.path.join(MEDIA_DIR, 'temp_video.mp4')
+                with open(temp_path, 'wb') as f:
+                    for chunk in uploaded_file.chunks():
+                        f.write(chunk)
+                
+                message = module.decode_video(temp_path, secure_key)
+                metrics = {
+                    'decode_time': time.time() - start_time,
+                    'capacity': calculate_video_capacity(temp_path, technique)
+                }
+                
+                os.remove(temp_path)  # Clean up
+                context = {'message': message, 'metrics': metrics, 'file_type': file_type}
+            
+            return render(request, 'decode.html', context)
+            
+        except Exception as e:
+            return render(request, 'decode.html', {
+                'message': f'ERROR: {str(e)}',
+                'file_type': file_type if 'file_type' in locals() else None,
+                'error': str(e)  # Added to show error in alert
+            })
     
     return render(request, 'decode.html')
 
-# Function to encode a message using LSB (Least Significant Bit) in the Red channel
-def encode_image(img, message, output_path, secure_key=''):
-    img = img.convert('RGB')
-    pixels = list(img.getdata())
-
-    # If a secure key is provided, prepend it to the message with a separator
-    if secure_key:
-        # Format: secure_key|:|message
-        message = secure_key + "|:|" + message
+def calculate_psnr(original_img, stego_img):
+    """Calculate Peak Signal-to-Noise Ratio between two images"""
+    # Convert to RGB if needed
+    if original_img.mode == 'P':
+        original_img = original_img.convert('RGBA')
+    if stego_img.mode == 'P':
+        stego_img = stego_img.convert('RGBA')
+        
+    if original_img.mode == 'L':
+        original_img = original_img.convert('RGB')
+    if stego_img.mode == 'L':
+        stego_img = stego_img.convert('RGB')
+        
+    if original_img.mode == 'RGBA':
+        background = Image.new('RGB', original_img.size, (255, 255, 255))
+        background.paste(original_img, mask=original_img.split()[3])
+        original_img = background
+        
+    if stego_img.mode == 'RGBA':
+        background = Image.new('RGB', stego_img.size, (255, 255, 255))
+        background.paste(stego_img, mask=stego_img.split()[3])
+        stego_img = background
     
-    # Append a delimiter to indicate the end of the message
-    message += "@@@"
-    binary_msg = ''.join(format(ord(i), '08b') for i in message)
+    if original_img.size != stego_img.size:
+        stego_img = stego_img.resize(original_img.size, Image.Resampling.LANCZOS)
     
-    # Check if the message is too long for the image
-    if len(binary_msg) > len(pixels):
-        raise ValueError("Message is too long to encode in the image.")
-
-    new_pixels = []
-    binary_index = 0
-
-    for pixel in pixels:
-        new_pixel = list(pixel)
-        if binary_index < len(binary_msg):
-            new_pixel[0] = (new_pixel[0] & ~1) | int(binary_msg[binary_index])  # Modify Red channel LSB
-            binary_index += 1
-        new_pixels.append(tuple(new_pixel))
-
-    new_img = Image.new(img.mode, img.size)
-    new_img.putdata(new_pixels)
-    new_img.save(output_path)
+    # Convert to numpy arrays
+    original_array = np.array(original_img, dtype=np.float64)
+    stego_array = np.array(stego_img, dtype=np.float64)
     
-    # Return the secure key in case it was generated here
-    return secure_key
+    # Calculate MSE for each channel
+    mse_values = []
+    for channel in range(min(original_array.shape[2], stego_array.shape[2])):
+        channel_mse = np.mean(np.square(
+            original_array[:,:,channel] - stego_array[:,:,channel]
+        ))
+        mse_values.append(float(channel_mse))
+    
+    mse = float(np.mean(mse_values))
+    
+    if mse < 1e-10:
+        return 100.0
+    max_pixel = 255.0
+    return float(20 * np.log10(max_pixel / np.sqrt(mse)))
 
-# Function to encode a message in an audio file (WAV)
-def encode_audio(audio_path, message, output_path, secure_key=''):
-    # If a secure key is provided, prepend it to the message with a separator
-    if secure_key:
-        message = secure_key + "|:|" + message
+def calculate_ssim(original_img, stego_img):
+    """Calculate Structural Similarity Index between two images"""
+    # Handle different image modes
+    if original_img.mode == 'P':
+        original_img = original_img.convert('RGBA')
+    if stego_img.mode == 'P':
+        stego_img = stego_img.convert('RGBA')
+        
+    if original_img.mode == 'L':
+        original_img = original_img.convert('RGB')
+    if stego_img.mode == 'L':
+        stego_img = stego_img.convert('RGB')
+        
+    if original_img.mode == 'RGBA':
+        background = Image.new('RGB', original_img.size, (255, 255, 255))
+        background.paste(original_img, mask=original_img.split()[3])
+        original_img = background
+        
+    if stego_img.mode == 'RGBA':
+        background = Image.new('RGB', stego_img.size, (255, 255, 255))
+        background.paste(stego_img, mask=stego_img.split()[3])
+        stego_img = background
     
-    # Append a delimiter to indicate the end of the message
-    message += "@@@"
+    if original_img.size != stego_img.size:
+        stego_img = stego_img.resize(original_img.size, Image.Resampling.LANCZOS)
     
-    # Convert message to binary
-    binary_msg = ''.join(format(ord(i), '08b') for i in message)
+    # Convert to numpy arrays
+    original_array = np.array(original_img, dtype=np.float64)
+    stego_array = np.array(stego_img, dtype=np.float64)
     
     try:
-        # Open the WAV file
-        with wave.open(audio_path, 'rb') as wav_file:
-            # Get WAV parameters
-            n_channels = wav_file.getnchannels()
-            sampwidth = wav_file.getsampwidth()
-            framerate = wav_file.getframerate()
-            n_frames = wav_file.getnframes()
-            
-            # Read all frames/samples
-            frames = wav_file.readframes(n_frames)
-            
-            # Convert frames to sample values
-            if sampwidth == 1:  # 8-bit samples
-                fmt = f"{n_frames}B"  # unsigned char
-                samples = list(struct.unpack(fmt, frames))
-                max_val = 255
-            elif sampwidth == 2:  # 16-bit samples
-                fmt = f"{n_frames * n_channels}h"  # short
-                samples = list(struct.unpack(fmt, frames))
-                max_val = 32767
-            else:
-                raise ValueError("Only 8-bit and 16-bit WAV files are supported")
-                
-            # Check if the message is too long
-            if len(binary_msg) > len(samples):
-                raise ValueError("Message is too long to encode in the audio file.")
-                
-            # Encode the message by modifying the LSB of each sample
-            for i in range(len(binary_msg)):
-                if i < len(samples):
-                    # Clear the LSB and set it to the message bit
-                    samples[i] = (samples[i] & ~1) | int(binary_msg[i])
-            
-            # Convert samples back to bytes
-            if sampwidth == 1:
-                modified_frames = struct.pack(fmt, *samples)
-            else:
-                modified_frames = struct.pack(fmt, *samples)
-                
-            # Create the output WAV file
-            with wave.open(output_path, 'wb') as output_wav:
-                output_wav.setparams((n_channels, sampwidth, framerate, n_frames, 'NONE', 'not compressed'))
-                output_wav.writeframes(modified_frames)
-                
-        return secure_key
-        
-    except Exception as e:
-        raise ValueError(f"Error encoding message in audio: {str(e)}")
-
-# Function to encode a message in a text file
-def encode_text(text_path, message, output_path, secure_key=''):
-    try:
-        # Read the original text
-        with open(text_path, 'r', encoding='utf-8') as file:
-            content = file.read()
-            
-        # If a secure key is provided, prepend it to the message with a separator
-        if secure_key:
-            message = secure_key + "|:|" + message
-            
-        # Append a delimiter to indicate the end of the message
-        message += "@@@"
-        
-        # Convert message to binary
-        binary_msg = ''.join(format(ord(i), '08b') for i in message)
-        
-        # Convert to hex to make it easier to embed in text
-        hex_msg = binascii.hexlify(binary_msg.encode()).decode()
-        
-        # Add invisible characters or zero-width spaces for each hex digit
-        encoded_content = content
-        
-        # Add encoded message as HTML comments or whitespace at the end of the file
-        encoded_content += f"\n\n<!-- {hex_msg} -->"
-        
-        # Write the modified content to the output file
-        with open(output_path, 'w', encoding='utf-8') as file:
-            file.write(encoded_content)
-            
-        return secure_key
-        
-    except Exception as e:
-        raise ValueError(f"Error encoding message in text: {str(e)}")
-
-# Function to encode a message in a video file
-def encode_video(video_path, message, output_path, secure_key=''):
-    try:
-        # If a secure key is provided, prepend it to the message with a separator
-        if secure_key:
-            message = secure_key + "|:|" + message
-            
-        # Append a delimiter to indicate the end of the message
-        message += "@@@"
-        
-        # Simply store the message in plain text after a marker
-        # This is a simplified approach but ensures reliable decoding
-        with open(video_path, 'rb') as source_file:
-            with open(output_path, 'wb') as dest_file:
-                # Copy the original video
-                dest_file.write(source_file.read())
-                
-                # Append the message directly with a clear marker
-                marker = b'\x00\x00\x00STEGANOGRAPHY_MARKER'
-                dest_file.write(marker + message.encode('utf-8'))
-                
-        return secure_key
-        
-    except Exception as e:
-        raise ValueError(f"Error encoding message in video: {str(e)}")
-
-# Function to decode the hidden message from an image
-def decode_image(img, secure_key=''):
-    pixels = list(img.getdata())
+        ssim_value = structural_similarity(
+            original_array,
+            stego_array,
+            channel_axis=2,
+            data_range=255.0
+        )
+    except Exception:
+        # Fallback to grayscale comparison if RGB comparison fails
+        ssim_value = structural_similarity(
+            cv2.cvtColor(original_array.astype(np.uint8), cv2.COLOR_RGB2GRAY),
+            cv2.cvtColor(stego_array.astype(np.uint8), cv2.COLOR_RGB2GRAY),
+            data_range=255.0
+        )
     
-    # Extract LSB from the Red channel
-    binary_msg = "".join(str(pixel[0] & 1) for pixel in pixels)
+    return float(ssim_value)
 
-    # Process binary data in 8-bit chunks
-    binary_chunks = [binary_msg[i:i+8] for i in range(0, len(binary_msg), 8) if i+8 <= len(binary_msg)]
+def calculate_capacity(img, technique):
+    """Calculate maximum message capacity for an image"""
+    width, height = img.size
+    pixels = width * height
+    if technique == 'LSB':
+        return pixels * 3 // 8  # 3 bits per pixel (RGB)
+    elif technique == 'DCT':
+        return pixels // 64  # 1 bit per 8x8 block
+    else:  # DWT
+        return pixels // 32  # Conservative estimate
+
+def calculate_audio_capacity(audio_path, technique):
+    """Calculate maximum message capacity for an audio file"""
+    with wave.open(audio_path, 'rb') as wav:
+        n_frames = wav.getnframes()
+        if technique == 'LSB':
+            return n_frames // 8
+        elif technique == 'DCT':
+            return n_frames // 64
+        else:  # DWT
+            return n_frames // 32
+
+def calculate_video_capacity(video_path, technique):
+    """Calculate maximum message capacity for a video file"""
+    cap = cv2.VideoCapture(video_path)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cap.release()
     
-    # Convert binary chunks to characters
-    message = ""
-    for chunk in binary_chunks:
+    pixels_per_frame = width * height
+    if technique == 'LSB':
+        return frame_count * pixels_per_frame * 3 // 8
+    elif technique == 'DCT':
+        return frame_count * pixels_per_frame // 100
+    else:  # DWT
+        return frame_count * pixels_per_frame // 160
+
+def get_image_data_url(img):
+    """Convert PIL Image to base64 data URL"""
+    try:
+        # Ensure image is in RGB/RGBA mode
+        if img.mode not in ['RGB', 'RGBA']:
+            img = img.convert('RGB')
+            
+        # Create a new buffer
+        buffered = BytesIO()
+        # Save image as PNG with maximum quality
+        img.save(buffered, format="PNG", quality=100, optimize=False)
+        # Get the base64 encoded string
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return f"data:image/png;base64,{img_str}"
+    except Exception as e:
+        print(f"Error converting image to data URL: {str(e)}")
+        return ""
+
+def generate_difference_map(original_img, stego_img):
+    """Generate a visual difference map between two images"""
+    # Ensure both images are in RGB mode
+    if original_img.mode != 'RGB':
+        original_img = original_img.convert('RGB')
+    if stego_img.mode != 'RGB':
+        stego_img = stego_img.convert('RGB')
+    
+    # Ensure same size
+    if original_img.size != stego_img.size:
+        stego_img = stego_img.resize(original_img.size, Image.Resampling.LANCZOS)
+    
+    # Create difference map
+    diff = ImageChops.difference(original_img, stego_img)
+    
+    # Enhance the difference visibility
+    enhancer = ImageEnhance.Brightness(diff)
+    enhanced_diff = enhancer.enhance(10.0)  # Increased enhancement factor
+    
+    # Further enhance contrast
+    contrast = ImageEnhance.Contrast(enhanced_diff)
+    final_diff = contrast.enhance(8.0)
+    
+    return get_image_data_url(final_diff)
+
+# Compare different steganography techniques
+def compare_techniques(request):
+    if request.method == 'POST' and request.FILES.get('file'):
+        file = request.FILES['file']
+        message = request.POST.get('message', '')
+        secure_key = request.POST.get('secure_key', '')
+        file_type = request.POST.get('file_type', 'image')
+
+        # Create directories if they don't exist
+        os.makedirs(MEDIA_DIR, exist_ok=True)
+        temp_dir = os.path.join(MEDIA_DIR, 'temp_stego_files')
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # Save uploaded file directly to temp directory
+        fs = FileSystemStorage(location=temp_dir)
+        filename = fs.save(file.name, file)
+        file_path = os.path.join(temp_dir, filename)
+        
+        comparison_error = None
+        
         try:
-            char = chr(int(chunk, 2))
-            message += char
+            # Convert image to PNG if needed
+            if file_type == 'image':
+                file_path = convert_to_png(file_path)
             
-            # Stop decoding once we hit the delimiter '@@@'
-            if message.endswith('@@@'):
-                full_message = message[:-3]  # Remove the delimiter
-                
-                # Check if the message uses the secure key format
-                if "|:|" in full_message:
-                    parts = full_message.split("|:|", 1)
-                    stored_key = parts[0]
-                    actual_message = parts[1]
+            # Run comparison for all techniques
+            metrics = comparison_utils.SteganoMetrics.run_full_comparison(
+                original_file=file_path,
+                message=message,
+                media_type=file_type,
+                secure_key=secure_key
+            )
+            
+            # Format metrics for template display
+            formatted_metrics = {
+                'psnr': {},
+                'ssim': {},
+                'capacity': {},
+                'encode_time': {},
+                'decode_time': {},
+                'decoded_messages': {},
+                'charts': metrics.get('charts', {})
+            }
+            
+            # Process metrics for each technique
+            for technique in ['lsb', 'dct', 'dwt']:
+                if 'metrics' in metrics and technique in metrics['metrics']:
+                    # Handle PSNR metrics
+                    psnr = metrics['metrics'][technique].get('psnr')
+                    if isinstance(psnr, (int, float)):
+                        formatted_metrics['psnr'][technique.upper()] = round(psnr, 2)
                     
-                    # If a secure key was provided, verify it matches
-                    if secure_key:
-                        if secure_key == stored_key:
-                            return actual_message
-                        else:
-                            return "ERROR: Incorrect secure key provided."
+                    # Handle SSIM metrics
+                    ssim = metrics['metrics'][technique].get('ssim')
+                    if isinstance(ssim, (int, float)):
+                        formatted_metrics['ssim'][technique.upper()] = round(ssim, 4)
+                
+                # Handle capacity
+                if 'capacity' in metrics and technique in metrics['capacity']:
+                    capacity = metrics['capacity'][technique]
+                    formatted_metrics['capacity'][technique.upper()] = f"{capacity:,} bytes"
+                
+                # Handle execution times
+                if 'execution_time' in metrics and technique in metrics['execution_time']:
+                    time_value = metrics['execution_time'][technique]
+                    formatted_metrics['encode_time'][technique.upper()] = f"{time_value:.4f} sec"
+                
+                # Handle decoded messages
+                if 'recovery_accuracy' in metrics and technique in metrics['recovery_accuracy']:
+                    accuracy = metrics['recovery_accuracy'][technique]
+                    if isinstance(accuracy, (int, float)):
+                        formatted_metrics['decoded_messages'][technique.upper()] = f"Accuracy: {accuracy:.2%}"
                     else:
-                        return "ERROR: This file requires a secure key to decode."
-                
-                # No secure key in the message, return as is
-                return full_message
-        except:
-            # Skip invalid binary data
-            continue
-
-    return "Message decoding incomplete - no delimiter found."
-
-# Function to decode a message from an audio file
-def decode_audio(audio_path, secure_key=''):
-    try:
-        # Open the WAV file
-        with wave.open(audio_path, 'rb') as wav_file:
-            # Get WAV parameters
-            n_channels = wav_file.getnchannels()
-            sampwidth = wav_file.getsampwidth()
-            framerate = wav_file.getframerate()
-            n_frames = wav_file.getnframes()
+                        formatted_metrics['decoded_messages'][technique.upper()] = str(accuracy)
             
-            # Read all frames/samples
-            frames = wav_file.readframes(n_frames)
+            # Get paths to encoded files - store just the filenames
+            encoded_files = {
+                technique.upper(): os.path.basename(path)
+                for technique, path in metrics.get('stego_paths', {}).items()
+            }
             
-            # Convert frames to sample values
-            if sampwidth == 1:  # 8-bit samples
-                fmt = f"{n_frames}B"  # unsigned char
-                samples = list(struct.unpack(fmt, frames))
-            elif sampwidth == 2:  # 16-bit samples
-                fmt = f"{n_frames * n_channels}h"  # short
-                samples = list(struct.unpack(fmt, frames))
-            else:
-                raise ValueError("Only 8-bit and 16-bit WAV files are supported")
-                
-            # Extract the LSB from each sample to get the binary message
-            binary_msg = "".join(str(sample & 1) for sample in samples)
+            # Move all steganography output files to temp directory
+            for technique, path in metrics.get('stego_paths', {}).items():
+                if os.path.exists(path):
+                    filename = os.path.basename(path)
+                    target_path = os.path.join(temp_dir, filename)
+                    if path != target_path:  # Only move if not already in temp dir
+                        shutil.move(path, target_path)
             
-            # Process binary data in 8-bit chunks
-            binary_chunks = [binary_msg[i:i+8] for i in range(0, len(binary_msg), 8) if i+8 <= len(binary_msg)]
+            context = {
+                'metrics': formatted_metrics,
+                'encoded_files': encoded_files,
+                'original_file': os.path.basename(file_path),
+                'file_type': file_type
+            }
             
-            # Convert binary chunks to characters
-            message = ""
-            for chunk in binary_chunks:
+            return render(request, 'compare.html', context)
+            
+        except Exception as e:
+            comparison_error = str(e)
+            return render(request, 'compare.html', {
+                'error': comparison_error,
+                'file_type': file_type
+            })
+        finally:
+            # Clean up any remaining files in the root media directory
+            if os.path.exists(file_path) and temp_dir not in file_path:
                 try:
-                    char = chr(int(chunk, 2))
-                    message += char
-                    
-                    # Stop decoding once we hit the delimiter '@@@'
-                    if message.endswith('@@@'):
-                        full_message = message[:-3]  # Remove the delimiter
-                        
-                        # Check if the message uses the secure key format
-                        if "|:|" in full_message:
-                            parts = full_message.split("|:|", 1)
-                            stored_key = parts[0]
-                            actual_message = parts[1]
-                            
-                            # If a secure key was provided, verify it matches
-                            if secure_key:
-                                if secure_key == stored_key:
-                                    return actual_message
-                                else:
-                                    return "ERROR: Incorrect secure key provided."
-                            else:
-                                return "ERROR: This file requires a secure key to decode."
-                        
-                        # No secure key in the message, return as is
-                        return full_message
-                except:
-                    # Skip invalid binary data
-                    continue
-                        
-            return "No hidden message found or message is incomplete."
-            
-    except Exception as e:
-        raise ValueError(f"Error decoding message from audio: {str(e)}")
-
-# Function to decode a message from a text file
-def decode_text(text_path, secure_key=''):
-    try:
-        # Read the text file
-        with open(text_path, 'r', encoding='utf-8') as file:
-            content = file.read()
-            
-        # Look for hidden message in HTML comments at the end
-        matches = re.findall(r'<!-- (.*?) -->', content)
-        
-        if matches:
-            try:
-                # Get the last comment which should contain our encoded message
-                hex_msg = matches[-1].strip()
-                
-                # Convert from hex directly to bytes
-                binary_data = binascii.unhexlify(hex_msg)
-                
-                # Convert binary data to text
-                message = binary_data.decode('utf-8')
-                
-                # Check for delimiter
-                if message.endswith('@@@'):
-                    full_message = message[:-3]  # Remove the delimiter
-                    
-                    # Check if the message uses the secure key format
-                    if "|:|" in full_message:
-                        parts = full_message.split("|:|", 1)
-                        stored_key = parts[0]
-                        actual_message = parts[1]
-                        
-                        # If a secure key was provided, verify it matches
-                        if secure_key:
-                            if secure_key == stored_key:
-                                return actual_message
-                            else:
-                                return "ERROR: Incorrect secure key provided."
-                        else:
-                            return "ERROR: This file requires a secure key to decode."
-                    
-                    # No secure key in the message, return as is
-                    return full_message
-                
-                return message
-            except Exception as e:
-                return f"Error decoding message: {str(e)}"
-        else:
-            return "No hidden message found in this text file."
-            
-    except Exception as e:
-        raise ValueError(f"Error decoding message from text: {str(e)}")
-
-# Function to decode a message from a video file
-def decode_video(video_path, secure_key=''):
-    try:
-        # Read the file content
-        with open(video_path, 'rb') as file:
-            content = file.read()
-        
-        # First, try the new marker approach
-        marker = b'\x00\x00\x00STEGANOGRAPHY_MARKER'
-        marker_position = content.find(marker)
-        
-        if marker_position != -1:
-            # Extract the message after the marker
-            encoded_data = content[marker_position + len(marker):]
-            
-            try:
-                # Decode the bytes directly to a string
-                message = encoded_data.decode('utf-8')
-                
-                # Check for delimiter
-                if "@@@" in message:
-                    # Split at the delimiter
-                    full_message = message.split("@@@")[0]
-                    
-                    # Check if the message uses the secure key format
-                    if "|:|" in full_message:
-                        parts = full_message.split("|:|", 1)
-                        stored_key = parts[0]
-                        actual_message = parts[1]
-                        
-                        # If a secure key was provided, verify it matches
-                        if secure_key:
-                            if secure_key == stored_key:
-                                return actual_message
-                            else:
-                                return "ERROR: Incorrect secure key provided."
-                        else:
-                            return "ERROR: This file requires a secure key to decode."
-                    
-                    # No secure key in the message, return as is
-                    return full_message
-            except:
-                pass  # If this fails, continue to the next approach
-        
-        # Try the original 'STEG' marker approach
-        old_marker = b'STEG'
-        old_marker_position = content.rfind(old_marker)
-        
-        if old_marker_position != -1:
-            # Try to directly extract ASCII characters
-            extracted_text = ""
-            for i in range(0, min(len(content) - old_marker_position - 4, 1000), 1):
-                byte_val = content[old_marker_position + 4 + i]
-                if 32 <= byte_val <= 126:  # Printable ASCII
-                    extracted_text += chr(byte_val)
-            
-            # If we have meaningful text, return it
-            if len(extracted_text) > 5:
-                return extracted_text
-                
-            # If we get binary data directly in the output, try to convert it 
-            # This handles cases where binary data is output directly to the browser
-            binary_output = content[old_marker_position + 4:old_marker_position + 204].decode('latin-1', errors='ignore')
-            if binary_output.startswith("0") and all(c in "01" for c in binary_output[:20]):
-                return convert_binary_to_text(binary_output)
-        
-        # Last resort: Check the file for any direct binary string patterns seen in the output
-        binary_pattern = "0111"
-        try:
-            file_text = content.decode('latin-1', errors='ignore')
-            if binary_pattern in file_text:
-                binary_start = file_text.find(binary_pattern)
-                potential_binary = file_text[binary_start:binary_start + 1000]
-                # Keep only 0s and 1s
-                clean_binary = ''.join(c for c in potential_binary if c in '01')
-                if len(clean_binary) >= 8:  # At least one byte
-                    return convert_binary_to_text(clean_binary)
-        except:
-            pass
-            
-        # If you're seeing a specific binary output pattern, try to decode it directly
-        sample_output = "303131313030303030313131313130303030313131303130303131313131303030313130313030303031313030313031303131303131303030313130313130303031313031313131303130303030303030313030303030303031303030303030"
-        if sample_output in str(content):
-            # This is likely hex representation of binary
-            try:
-                binary = ''.join(format(int(sample_output[i:i+2], 16), '08b') for i in range(0, len(sample_output), 2))
-                return convert_binary_to_text(binary)
-            except:
-                # If direct conversion fails, try different interpretations
-                return "Found encoded data. Please try encoding a new file with a simple message."
-        
-        # If no recognizable pattern found
-        return "No hidden message found in this file. Please try encoding a new file."
-            
-    except Exception as e:
-        return f"Error decoding message: {str(e)}"
-
-# Helper function to convert binary string to text
-def convert_binary_to_text(binary_str):
-    # Clean the binary string - keep only 0s and 1s
-    clean_binary = ''.join(c for c in binary_str if c in '01')
+                    os.remove(file_path)
+                except OSError:
+                    pass
     
-    # Try different approaches to decode
-    decoded_text = ""
-    
-    # Approach 1: Standard 8-bit ASCII
-    try:
-        for i in range(0, len(clean_binary), 8):
-            if i + 8 <= len(clean_binary):
-                byte = clean_binary[i:i+8]
-                char_code = int(byte, 2)
-                if 32 <= char_code <= 126:  # Printable ASCII
-                    decoded_text += chr(char_code)
-        
-        if len(decoded_text) > 3:
-            return decoded_text
-    except:
-        pass
-    
-    # Approach 2: Try to decode the specific output pattern you're seeing
-    # Examples like: "303131313030303030313131313130303030..."
-    if clean_binary.startswith("30") and all(c in "0123" for c in clean_binary[:10]):
-        try:
-            # This might be hexadecimal ASCII codes
-            hex_text = ""
-            for i in range(0, len(clean_binary), 2):
-                if i + 2 <= len(clean_binary):
-                    hex_byte = clean_binary[i:i+2]
-                    char_code = int(hex_byte, 16)
-                    if 32 <= char_code <= 126:  # Printable ASCII
-                        hex_text += chr(char_code)
-            
-            if len(hex_text) > 3:
-                return hex_text
-        except:
-            pass
-    
-    # If all attempts fail, return a helpful message with sample of the binary
-    binary_sample = clean_binary[:100] + "..." if len(clean_binary) > 100 else clean_binary
-    return f"Found binary data but couldn't convert to text. Try encoding a new file with the updated code. Binary sample: {binary_sample}"
+    return render(request, 'compare.html')
 
 # Function to allow users to download the encoded file
 def download_image(request, filename):

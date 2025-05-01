@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SteganoGuard | Compare Techniques</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --dark-color: #2e59d9;
+            --light-color: #f8f9fc;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --info-color: #36b9cc;
+            --purple-color: #8540f5;
+        }
+        body {
+            background-color: var(--light-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: var(--dark-color) !important;
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--info-color) 0%, var(--purple-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .main-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            height: 100%;
+        }
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(54, 185, 204, 0.25);
+            border-color: var(--info-color);
+        }
+        .btn-custom-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-dark {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-primary:hover, .btn-custom-secondary:hover, .btn-custom-info:hover, .btn-custom-dark:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            color: white;
+        }
+        .results-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        .results-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .file-type-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        .metric-card {
+            border-radius: 10px;
+            padding: 1.5rem;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .metric-card-lsb {
+            background: linear-gradient(135deg, #e6f7ff 0%, #ccefff 100%);
+            border-left: 4px solid var(--primary-color);
+        }
+        .metric-card-dct {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff2cc 100%);
+            border-left: 4px solid var(--warning-color);
+        }
+        .metric-card-dwt {
+            background: linear-gradient(135deg, #e6fff9 0%, #ccffee 100%);
+            border-left: 4px solid var(--info-color);
+        }
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            color: #636e72;
+            margin-bottom: 0.5rem;
+        }
+        .chart-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background-color: white;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .technique-icon-lsb {
+            color: var(--primary-color);
+        }
+        .technique-icon-dct {
+            color: var(--warning-color);
+        }
+        .technique-icon-dwt {
+            color: var(--info-color);
+        }
+        .comparison-table th {
+            background-color: #f8fafc;
+        }
+        .comparison-table td, .comparison-table th {
+            vertical-align: middle;
+        }
+        .image-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .image-container {
+            text-align: center;
+            flex: 1;
+        }
+        .image-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .slider-container {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .slider-before, .slider-after {
+            width: 100%;
+            display: block;
+        }
+        .slider-after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            overflow: hidden;
+            border-right: 3px solid white;
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 40px;
+            transform: translateX(-50%);
+            cursor: ew-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slider-handle::after {
+            content: "";
+            height: 40px;
+            width: 3px;
+            background-color: white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #636e72;
+            padding: 1rem 1.5rem;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--info-color);
+            border-color: var(--info-color);
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-info mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5>Analyzing Steganography Techniques...</h5>
+            <p class="text-muted mb-0">This may take a few moments</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-lock me-2"></i>SteganoGuard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/encode/">Encode</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/decode/">Decode</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/compare/">Compare</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container text-center">
+            <h1 class="fw-bold"><i class="fas fa-chart-bar me-2"></i>Compare Steganography Techniques</h1>
+            <p class="lead">Analyze and compare different steganography methods based on key performance metrics</p>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        {% if metrics %}
+            <!-- Comparison Results -->
+            <div class="results-card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Technique Comparison Results</h4>
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Performance Analysis of Different Steganography Techniques</h5>
+                    
+                    <!-- Metrics Summary Cards -->
+                    <div class="row g-4 mb-4">
+                        <!-- PSNR -->
+                        {% if metrics.psnr %}
+                            <div class="col-md-4 mb-4">
+                                <h6>Imperceptibility (PSNR)</h6>
+                                <small class="text-muted d-block mb-3">Higher values indicate better visual quality</small>
+                                
+                                <div class="row g-3">
+                                    {% for technique, value in metrics.psnr.items %}
+                                        <div class="col-12">
+                                            <div class="metric-card metric-card-{{ technique|lower }}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <div class="metric-label">{{ technique }}</div>
+                                                        <div class="metric-value">{{ value }} dB</div>
+                                                    </div>
+                                                    <div class="technique-icon-{{ technique|lower }}">
+                                                        {% if technique == 'LSB' %}
+                                                            <i class="fas fa-paint-brush fa-2x"></i>
+                                                        {% elif technique == 'DCT' %}
+                                                            <i class="fas fa-wave-square fa-2x"></i>
+                                                        {% elif technique == 'DWT' %}
+                                                            <i class="fas fa-water fa-2x"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- SSIM -->
+                        {% if metrics.ssim %}
+                            <div class="col-md-4 mb-4">
+                                <h6>Structural Similarity (SSIM)</h6>
+                                <small class="text-muted d-block mb-3">Values closer to 1.0 indicate better similarity</small>
+                                
+                                <div class="row g-3">
+                                    {% for technique, value in metrics.ssim.items %}
+                                        <div class="col-12">
+                                            <div class="metric-card metric-card-{{ technique|lower }}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <div class="metric-label">{{ technique }}</div>
+                                                        <div class="metric-value">{{ value }}</div>
+                                                    </div>
+                                                    <div class="technique-icon-{{ technique|lower }}">
+                                                        {% if technique == 'LSB' %}
+                                                            <i class="fas fa-paint-brush fa-2x"></i>
+                                                        {% elif technique == 'DCT' %}
+                                                            <i class="fas fa-wave-square fa-2x"></i>
+                                                        {% elif technique == 'DWT' %}
+                                                            <i class="fas fa-water fa-2x"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Capacity -->
+                        {% if metrics.capacity %}
+                            <div class="col-md-4 mb-4">
+                                <h6>Message Capacity</h6>
+                                <small class="text-muted d-block mb-3">Maximum data that can be hidden</small>
+                                
+                                <div class="row g-3">
+                                    {% for technique, value in metrics.capacity.items %}
+                                        <div class="col-12">
+                                            <div class="metric-card metric-card-{{ technique|lower }}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <div class="metric-label">{{ technique }}</div>
+                                                        <div class="metric-value">{{ value }}</div>
+                                                    </div>
+                                                    <div class="technique-icon-{{ technique|lower }}">
+                                                        {% if technique == 'LSB' %}
+                                                            <i class="fas fa-paint-brush fa-2x"></i>
+                                                        {% elif technique == 'DCT' %}
+                                                            <i class="fas fa-wave-square fa-2x"></i>
+                                                        {% elif technique == 'DWT' %}
+                                                            <i class="fas fa-water fa-2x"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Processing Time -->
+                        <div class="col-md-6 mb-4">
+                            <h6>Encoding Time</h6>
+                            <small class="text-muted d-block mb-3">Time taken to embed the message</small>
+                            
+                            <div class="row g-3">
+                                {% for technique, value in metrics.encode_time.items %}
+                                    <div class="col-md-4">
+                                        <div class="metric-card metric-card-{{ technique|lower }}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="metric-label">{{ technique }}</div>
+                                                    <div class="metric-value">{{ value }}</div>
+                                                </div>
+                                                <div class="technique-icon-{{ technique|lower }}">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <h6>Decoding Time</h6>
+                            <small class="text-muted d-block mb-3">Time taken to extract the message</small>
+                            
+                            <div class="row g-3">
+                                {% for technique, value in metrics.decode_time.items %}
+                                    <div class="col-md-4">
+                                        <div class="metric-card metric-card-{{ technique|lower }}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="metric-label">{{ technique }}</div>
+                                                    <div class="metric-value">{{ value }}</div>
+                                                </div>
+                                                <div class="technique-icon-{{ technique|lower }}">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts" type="button" role="tab" aria-controls="charts" aria-selected="true">
+                                <i class="fas fa-chart-bar me-2"></i>Charts
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button" role="tab" aria-controls="comparison" aria-selected="false">
+                                <i class="fas fa-eye me-2"></i>Visual Comparison
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab" aria-controls="messages" aria-selected="false">
+                                <i class="fas fa-comment-alt me-2"></i>Decoded Messages
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="myTabContent">
+                        <!-- Charts Tab -->
+                        <div class="tab-pane fade show active" id="charts" role="tabpanel" aria-labelledby="charts-tab">
+                            <div class="row">
+                                {% if metrics.charts.psnr_chart %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="chart-container">
+                                            <h6 class="text-center mb-3">PSNR Comparison</h6>
+                                            <img src="data:image/png;base64,{{ metrics.charts.psnr_chart }}" class="img-fluid" alt="PSNR Chart">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if metrics.charts.ssim_chart %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="chart-container">
+                                            <h6 class="text-center mb-3">SSIM Comparison</h6>
+                                            <img src="data:image/png;base64,{{ metrics.charts.ssim_chart }}" class="img-fluid" alt="SSIM Chart">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if metrics.charts.capacity_chart %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="chart-container">
+                                            <h6 class="text-center mb-3">Capacity Comparison</h6>
+                                            <img src="data:image/png;base64,{{ metrics.charts.capacity_chart }}" class="img-fluid" alt="Capacity Chart">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if metrics.charts.time_chart %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="chart-container">
+                                            <h6 class="text-center mb-3">Processing Time Comparison</h6>
+                                            <img src="data:image/png;base64,{{ metrics.charts.time_chart }}" class="img-fluid" alt="Time Chart">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Visual Comparison Tab -->
+                        <div class="tab-pane fade" id="comparison" role="tabpanel" aria-labelledby="comparison-tab">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Visual Comparison:</strong> Compare the original image with each steganography technique to see differences in quality.
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="image-container">
+                                        <img src="/media/temp_stego_files/{{ original_file }}" class="img-fluid" alt="Original Image">
+                                        <p class="mt-2"><strong>Original</strong></p>
+                                    </div>
+                                </div>
+                                
+                                {% for technique, filename in encoded_files.items %}
+                                    <div class="col-md-3 mb-3">
+                                        <div class="image-container">
+                                            <img src="/media/temp_stego_files/{{ filename }}" class="img-fluid" alt="{{ technique }} Encoded Image">
+                                            <p class="mt-2"><strong>{{ technique }}</strong></p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="row">
+                                {% for technique, filename in encoded_files.items %}
+                                    <div class="col-md-4 mb-4">
+                                        <h6 class="text-center mb-3">Original vs {{ technique }}</h6>
+                                        <div class="slider-container" id="slider-{{ technique|lower }}">
+                                            <img src="/media/temp_stego_files/{{ original_file }}" class="slider-before" alt="Original Image">
+                                            <div class="slider-after">
+                                                <img src="/media/temp_stego_files/{{ filename }}" alt="{{ technique }} Encoded Image">
+                                            </div>
+                                            <div class="slider-handle" id="handle-{{ technique|lower }}"></div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Decoded Messages Tab -->
+                        <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Decoded Messages:</strong> The same message was encoded and then decoded using each technique.
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Technique</th>
+                                            <th>Decoded Message</th>
+                                            <th>Accuracy</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for technique, message in metrics.decoded_messages.items %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="technique-icon-{{ technique|lower }} me-2">
+                                                            {% if technique == 'LSB' %}
+                                                                <i class="fas fa-paint-brush"></i>
+                                                            {% elif technique == 'DCT' %}
+                                                                <i class="fas fa-wave-square"></i>
+                                                            {% elif technique == 'DWT' %}
+                                                                <i class="fas fa-water"></i>
+                                                            {% endif %}
+                                                        </div>
+                                                        <strong>{{ technique }}</strong>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if "ERROR:" in message %}
+                                                        <span class="text-danger">{{ message }}</span>
+                                                    {% else %}
+                                                        <div style="max-height: 100px; overflow-y: auto;">
+                                                            {{ message }}
+                                                        </div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if "ERROR:" in message %}
+                                                        <span class="badge bg-danger">Failed</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">Success</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="/compare/" class="btn btn-custom-dark">
+                    <i class="fas fa-sync-alt me-2"></i>Run New Comparison
+                </a>
+                <a href="{% url 'encode' %}" class="btn btn-custom-primary ms-2">
+                    <i class="fas fa-lock me-2"></i>Go to Encode
+                </a>
+            </div>
+        {% else %}
+            <!-- Comparison Form -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card main-card">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="fas fa-chart-bar me-2 text-info"></i>Compare Steganography Techniques</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="text-center mb-4">Upload a media file and enter a message to compare how different steganography techniques perform</p>
+                            
+                            <form action="/compare/" method="post" enctype="multipart/form-data" id="compareForm">
+                                {% csrf_token %}
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Select File Type:</label>
+                                    <div class="row g-3">
+                                        <div class="col-md-6 col-lg-3">
+                                            <div class="form-check custom-radio">
+                                                <input class="form-check-input" type="radio" name="file_type" id="imageType" value="image" checked onclick="updateCompareFileInput()">
+                                                <label class="form-check-label" for="imageType">
+                                                    <i class="fas fa-image text-primary file-type-icon"></i>Image
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-lg-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="file_type" id="audioType" value="audio" onclick="updateCompareFileInput()">
+                                                <label class="form-check-label" for="audioType">
+                                                    <i class="fas fa-music text-warning file-type-icon"></i>Audio
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-lg-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="file_type" id="textType" value="text" onclick="updateCompareFileInput()">
+                                                <label class="form-check-label" for="textType">
+                                                    <i class="fas fa-file-alt text-info file-type-icon"></i>Text
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-lg-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="file_type" id="videoType" value="video" onclick="updateCompareFileInput()">
+                                                <label class="form-check-label" for="videoType">
+                                                    <i class="fas fa-video text-danger file-type-icon"></i>Video
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Select Steganography Technique:</label>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="technique-card technique-card-lsb">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="techniques[]" id="lsbTechnique" value="lsb" checked>
+                                                    <label class="form-check-label" for="lsbTechnique">
+                                                        <i class="fas fa-paint-brush text-primary"></i>
+                                                        <span>LSB (Least Significant Bit)</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="technique-card technique-card-dct">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="techniques[]" id="dctTechnique" value="dct" checked>
+                                                    <label class="form-check-label" for="dctTechnique">
+                                                        <i class="fas fa-wave-square text-warning"></i>
+                                                        <span>DCT (Discrete Cosine Transform)</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="technique-card technique-card-dwt">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="techniques[]" id="dwtTechnique" value="dwt" checked>
+                                                    <label class="form-check-label" for="dwtTechnique">
+                                                        <i class="fas fa-water text-info"></i>
+                                                        <span>DWT (Discrete Wavelet Transform)</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Upload File:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-info text-white">
+                                            <i class="fas fa-upload"></i>
+                                        </span>
+                                        <input type="file" name="file" id="compareFileInput" class="form-control" required>
+                                    </div>
+                                    <small id="compareFileTypeInfo" class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>For the best comparison, use high-quality images. The file will be converted to PNG if needed.
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Message to Hide:</label>
+                                    <textarea name="message" class="form-control" rows="4" placeholder="Enter a message to hide using multiple techniques..." required></textarea>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>This message will be hidden using LSB, DCT, and DWT techniques for comparison.
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Secure Key (optional):</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-warning text-dark">
+                                            <i class="fas fa-key"></i>
+                                        </span>
+                                        <input type="text" name="secure_key" class="form-control" placeholder="Enter a secure key (optional)">
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>The same key will be used for all techniques.
+                                    </small>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-custom-info w-100" onclick="showLoading()">
+                                        <i class="fas fa-chart-bar me-2"></i>Compare Steganography Techniques
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>© 2025 SteganoGuard - Secure Steganography Application</p>
+            <p class="mb-0">Advanced steganography techniques for information security</p>
+        </div>
+    </footer>
+
+    <script>
+    function updateCompareFileInput() {
+        const fileType = document.querySelector('input[name="file_type"]:checked').value;
+        const fileInput = document.getElementById('compareFileInput');
+        const fileTypeInfo = document.getElementById('compareFileTypeInfo');
+        
+        // Update the file input accept attribute based on the selected file type
+        switch(fileType) {
+            case 'image':
+                fileInput.accept = '.jpg,.jpeg,.png,.gif,.bmp';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>For the best comparison, use high-quality images. The file will be converted to PNG if needed.';
+                break;
+            case 'audio':
+                fileInput.accept = '.wav';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Only WAV audio files are supported for comparison.';
+                break;
+            case 'text':
+                fileInput.accept = '.txt,.html,.css,.js,.md';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Text files will be compared using different hiding techniques.';
+                break;
+            case 'video':
+                fileInput.accept = '.mp4,.avi,.mov';
+                fileTypeInfo.innerHTML = '<i class="fas fa-info-circle me-1"></i>Note: Video comparison may take longer to process.';
+                break;
+        }
+    }
+    
+    function showLoading() {
+        // Only show loading if the form is valid
+        if (document.getElementById('compareForm')) {
+            if (document.getElementById('compareForm').checkValidity()) {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+            }
+        }
+    }
+    
+    // Initialize image comparison sliders
+    function initSliders() {
+        const sliders = document.querySelectorAll('.slider-container');
+        
+        sliders.forEach((slider) => {
+            const handle = slider.querySelector('.slider-handle');
+            const sliderAfter = slider.querySelector('.slider-after');
+            
+            let isDragging = false;
+            
+            function updateSliderPosition(x) {
+                const sliderRect = slider.getBoundingClientRect();
+                let position = (x - sliderRect.left) / sliderRect.width;
+                position = Math.max(0, Math.min(1, position));
+                
+                sliderAfter.style.width = `${position * 100}%`;
+                handle.style.left = `${position * 100}%`;
+            }
+            
+            // Mouse events
+            handle.addEventListener('mousedown', () => {
+                isDragging = true;
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    updateSliderPosition(e.clientX);
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            // Touch events
+            handle.addEventListener('touchstart', () => {
+                isDragging = true;
+            });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    updateSliderPosition(e.touches[0].clientX);
+                }
+            });
+            
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+            
+            // Click on slider
+            slider.addEventListener('click', (e) => {
+                updateSliderPosition(e.clientX);
+            });
+        });
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCompareFileInput();
+        
+        // Initialize image sliders if they exist
+        if (document.querySelector('.slider-container')) {
+            initSliders();
+        }
+    });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -6,7 +6,8 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('encode/', views.encode_message, name='encode'),
-    path('decode/', views.decode_message, name='decode'),
+    path('decode/', views.decode, name='decode'),
+    path('compare/', views.compare_techniques, name='compare'),
     path('download/<str:filename>/', views.download_image, name='download'),
 ]
 

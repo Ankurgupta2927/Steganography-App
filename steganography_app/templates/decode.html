@@ -150,6 +150,30 @@
             display: flex;
             gap: 0.5rem;
         }
+        /* Visual comparison styles */
+        .visual-comparison .comparison-card {
+            background: white;
+            transition: all 0.3s ease;
+        }
+        .visual-comparison .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .visual-comparison .image-container {
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .visual-comparison img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+        .visual-comparison .difference-map img {
+            filter: contrast(150%) brightness(150%);
+        }
     </style>
 </head>
 <body>
@@ -183,6 +207,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="/decode/">Decode</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/compare/">Compare</a>
                     </li>
                 </ul>
             </div>
@@ -247,6 +274,36 @@
                                             <input class="form-check-input" type="radio" name="file_type" id="videoType" value="video" onclick="updateFileInput()">
                                             <label class="form-check-label" for="videoType">
                                                 <i class="fas fa-video text-danger file-type-icon"></i>Video
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Steganography Technique:</label>
+                                <div class="row g-3">
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="technique" id="lsbTechnique" value="lsb" checked>
+                                            <label class="form-check-label" for="lsbTechnique">
+                                                <i class="fas fa-paint-brush text-primary file-type-icon"></i>LSB (Least Significant Bit)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="technique" id="dctTechnique" value="dct">
+                                            <label class="form-check-label" for="dctTechnique">
+                                                <i class="fas fa-wave-square text-warning file-type-icon"></i>DCT (Discrete Cosine Transform)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="technique" id="dwtTechnique" value="dwt">
+                                            <label class="form-check-label" for="dwtTechnique">
+                                                <i class="fas fa-water text-info file-type-icon"></i>DWT (Discrete Wavelet Transform)
                                             </label>
                                         </div>
                                     </div>
@@ -324,6 +381,94 @@
                                         <i class="fas fa-download me-1"></i>Save as Text
                                     </button>
                                 </div>
+
+                                <!-- Performance Metrics Section -->
+                                {% if metrics %}
+                                <div class="performance-metrics mt-4">
+                                    <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Performance Metrics</h5>
+                                    <div class="row g-3">
+                                        {% if metrics.psnr %}
+                                        <div class="col-md-6">
+                                            <div class="metric-card bg-light p-3 rounded">
+                                                <h6 class="text-primary mb-2">PSNR (Quality)</h6>
+                                                <p class="h4 mb-1">{{ metrics.psnr|floatformat:2 }} dB</p>
+                                                <small class="text-muted">Higher is better (>30dB is good)</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if metrics.ssim %}
+                                        <div class="col-md-6">
+                                            <div class="metric-card bg-light p-3 rounded">
+                                                <h6 class="text-primary mb-2">SSIM (Similarity)</h6>
+                                                <p class="h4 mb-1">{{ metrics.ssim|floatformat:4 }}</p>
+                                                <small class="text-muted">Closer to 1.0 is better</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if metrics.decode_time %}
+                                        <div class="col-md-6">
+                                            <div class="metric-card bg-light p-3 rounded">
+                                                <h6 class="text-primary mb-2">Decode Time</h6>
+                                                <p class="h4 mb-1">{{ metrics.decode_time|floatformat:3 }}s</p>
+                                                <small class="text-muted">Processing time in seconds</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if metrics.capacity %}
+                                        <div class="col-md-6">
+                                            <div class="metric-card bg-light p-3 rounded">
+                                                <h6 class="text-primary mb-2">Capacity</h6>
+                                                <p class="h4 mb-1">{{ metrics.capacity|filesizeformat }}</p>
+                                                <small class="text-muted">Maximum data capacity</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Visual Comparison Section -->
+                                {% if file_type == 'image' and original_image and stego_image %}
+                                <div class="visual-comparison mt-4">
+                                    <h5 class="mb-3"><i class="fas fa-images me-2"></i>Visual Comparison</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="comparison-card p-3 border rounded">
+                                                <h6 class="text-center mb-3">Original Image</h6>
+                                                <div class="image-container" style="max-height: 400px; overflow: hidden;">
+                                                    <img src="{{ original_image }}" class="img-fluid rounded" alt="Original Image" style="width: 100%; height: 100%; object-fit: contain;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="comparison-card p-3 border rounded">
+                                                <h6 class="text-center mb-3">Decoded Image</h6>
+                                                <div class="image-container" style="max-height: 400px; overflow: hidden;">
+                                                    <img src="{{ stego_image }}" class="img-fluid rounded" alt="Decoded Image" style="width: 100%; height: 100%; object-fit: contain;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Image Difference Visualization -->
+                                    {% if diff_image %}
+                                    <div class="mt-4">
+                                        <div class="comparison-card p-3 border rounded">
+                                            <h6 class="text-center mb-3">Difference Map</h6>
+                                            <div class="image-container" style="max-height: 400px; overflow: hidden;">
+                                                <img src="{{ diff_image }}" class="img-fluid rounded" alt="Difference Map" style="width: 100%; height: 100%; object-fit: contain;">
+                                            </div>
+                                            <div class="text-center mt-3">
+                                                <small class="text-muted">Brighter areas indicate differences between the original and decoded images</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
                             {% endif %}
                             
                             {% if "ERROR:" in message and "secure key" in message %}
@@ -364,6 +509,9 @@
             </a>
             <a href="{% url 'encode' %}" class="btn btn-custom-primary">
                 <i class="fas fa-lock me-2"></i>Go to Encode
+            </a>
+            <a href="{% url 'compare' %}" class="btn btn-outline-info ms-2">
+                <i class="fas fa-chart-bar me-2"></i>Compare Techniques
             </a>
         </div>
     </div>
