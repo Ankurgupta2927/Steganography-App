@@ -30,6 +30,7 @@
     --feature-card-bg: #ffffff;
     --secure-key-alert-bg: #fcf8e3;
     --bg-light: #f8f9fc;
+    --btn-hover-bg: #e2e6ea;
 }
 
 /* Dark Theme Variables */
@@ -62,6 +63,7 @@
     --feature-card-bg: #1a1d29;
     --secure-key-alert-bg: #2d2c1d;
     --bg-light: #1a1d29;
+    --btn-hover-bg: #2a3245;
 }
 
 /* Core Styling */
@@ -185,7 +187,48 @@ h1, h2, h3, h4, h5, h6, p, span, div, label, small, strong, a:not(.btn), li {
 }
 
 .btn-outline-primary:hover, .btn-outline-secondary:hover, .btn-outline-dark:hover {
-    color: white !important;
+    background-color: var(--btn-hover-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.btn:not(.btn-primary):not(.btn-secondary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):hover {
+    background-color: var(--btn-hover-bg) !important;
+    color: var(--text-color) !important;
+}
+
+[data-theme="dark"] .btn:hover:not(.btn-primary):not(.btn-secondary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info) {
+    color: var(--text-color) !important;
+    background-color: var(--btn-hover-bg) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-color) !important;
+    opacity: 0.9;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-color) !important;
+    opacity: 0.9;
+}
+
+.btn-success:hover {
+    background-color: var(--secondary-color) !important;
+    opacity: 0.9;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-color) !important;
+    opacity: 0.9;
+}
+
+.btn-warning:hover {
+    background-color: var(--warning-color) !important;
+    opacity: 0.9;
+}
+
+.btn-info:hover {
+    background-color: var(--info-color) !important;
+    opacity: 0.9;
 }
 
 hr {
