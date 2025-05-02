@@ -8,6 +8,7 @@ urlpatterns = [
     path('encode/', views.encode_message, name='encode'),
     path('decode/', views.decode, name='decode'),
     path('compare/', views.compare_techniques, name='compare'),
+    path('visualize/', views.visualize_techniques, name='visualize'),  # New URL route
     path('download/<str:filename>/', views.download_image, name='download'),
 ]
 

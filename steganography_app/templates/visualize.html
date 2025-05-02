@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <header class="page-header">
+        <div class="container text-center">
+            <h1 class="fw-bold"><i class="fas fa-eye me-2"></i>Steganography Techniques Visualization</h1>
+            <p class="lead">Understanding how different steganography methods work across various media types</p>
+        </div>
+    </header>
+
+    <!-- Technique Tabs -->
+    <ul class="nav nav-pills mb-4 justify-content-center" id="techniqueTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="lsb-tab" data-bs-toggle="pill" data-bs-target="#lsb" type="button">
+                <i class="fas fa-paint-brush me-2"></i>LSB
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dct-tab" data-bs-toggle="pill" data-bs-target="#dct" type="button">
+                <i class="fas fa-wave-square me-2"></i>DCT
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dwt-tab" data-bs-toggle="pill" data-bs-target="#dwt" type="button">
+                <i class="fas fa-water me-2"></i>DWT
+            </button>
+        </li>
+    </ul>
+
+    <!-- Technique Content -->
+    <div class="tab-content" id="techniqueContent">
+        <!-- LSB Technique -->
+        <div class="tab-pane fade show active" id="lsb" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="technique-card">
+                        <h3><i class="fas fa-paint-brush text-primary me-2"></i>Least Significant Bit (LSB)</h3>
+                        <p>LSB steganography works by replacing the least significant bits of data with message bits. This technique is simple but effective for various media types.</p>
+                    </div>
+                </div>
+                
+                <!-- Image LSB -->
+                <div class="col-md-6">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-image me-2"></i>Image LSB</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ lsb_image }}" class="img-fluid" alt="LSB Image Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>In images, LSB modifies the last bit of pixel values, causing minimal visual change while storing data.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio LSB -->
+                <div class="col-md-6">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-music me-2"></i>Audio LSB</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ lsb_audio }}" class="img-fluid" alt="LSB Audio Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>For audio files, LSB modifies the least significant bits of audio samples, maintaining audio quality.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text LSB -->
+                <div class="col-md-12">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-file-alt me-2"></i>Text LSB</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ lsb_text }}" class="img-fluid" alt="LSB Text Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>Text is first converted to binary, then hidden using LSB in the carrier file.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DCT Technique -->
+        <div class="tab-pane fade" id="dct" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="technique-card">
+                        <h3><i class="fas fa-wave-square text-warning me-2"></i>Discrete Cosine Transform (DCT)</h3>
+                        <p>DCT transforms data into frequency components, allowing data hiding in frequency coefficients.</p>
+                    </div>
+                </div>
+
+                <!-- Image DCT -->
+                <div class="col-md-12">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-image me-2"></i>Image DCT</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ dct_image }}" class="img-fluid" alt="DCT Image Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>Images are divided into 8x8 blocks, transformed to frequency domain, and coefficients are modified to hide data.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio DCT -->
+                <div class="col-md-12">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-music me-2"></i>Audio DCT</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ dct_audio }}" class="img-fluid" alt="DCT Audio Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>Audio signals are transformed to frequency domain where data is hidden in DCT coefficients.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DWT Technique -->
+        <div class="tab-pane fade" id="dwt" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="technique-card">
+                        <h3><i class="fas fa-water text-info me-2"></i>Discrete Wavelet Transform (DWT)</h3>
+                        <p>DWT decomposes data into different frequency sub-bands, providing multiple locations for data hiding.</p>
+                    </div>
+                </div>
+
+                <!-- Image DWT -->
+                <div class="col-md-12">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-image me-2"></i>Image DWT</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ dwt_image }}" class="img-fluid" alt="DWT Image Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>Images are decomposed into frequency sub-bands (LL, LH, HL, HH), with data typically hidden in detail coefficients.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio DWT -->
+                <div class="col-md-12">
+                    <div class="media-card">
+                        <h5 class="card-title"><i class="fas fa-music me-2"></i>Audio DWT</h5>
+                        <div class="visualization-container">
+                            <img src="data:image/png;base64,{{ dwt_audio }}" class="img-fluid" alt="DWT Audio Visualization">
+                        </div>
+                        <div class="explanation mt-3">
+                            <p>Audio signals are decomposed into approximation and detail coefficients using wavelets.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .technique-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    
+    .media-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .media-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .visualization-container {
+        background: rgba(248, 249, 250, 0.5);
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .visualization-container img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .nav-pills .nav-link {
+        border-radius: 30px;
+        padding: 0.75rem 1.5rem;
+        margin: 0 0.5rem;
+        font-weight: 600;
+        color: #636e72;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: var(--info-color);
+    }
+    
+    .explanation {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+    
+    .explanation p {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+</style>
+{% endblock %}

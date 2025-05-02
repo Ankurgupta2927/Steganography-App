@@ -432,6 +432,56 @@ def generate_difference_map(original_img, stego_img):
     
     return get_image_data_url(final_diff)
 
+def generate_technique_visualizations():
+    """Generate visualizations for each steganography technique"""
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from io import BytesIO
+    import base64
+    
+    visualizations = {}
+    
+    # LSB Visualization
+    plt.figure(figsize=(6, 3))
+    # Create a sample 8-bit binary number visualization
+    binary = '11010110'
+    plt.text(0.5, 0.7, 'Original bit: ' + binary, ha='center', va='center', fontsize=10)
+    plt.text(0.5, 0.3, 'LSB modified: ' + binary[:-1] + '1', ha='center', va='center', fontsize=10)
+    plt.axis('off')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+    visualizations['lsb_visualization'] = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+    
+    # DCT Visualization
+    plt.figure(figsize=(6, 3))
+    x = np.linspace(0, 4*np.pi, 100)
+    y1 = np.cos(x)
+    y2 = 0.7*np.cos(x) + 0.3*np.cos(3*x)
+    plt.plot(x, y1, label='Original', color='blue', alpha=0.5)
+    plt.plot(x, y2, label='DCT Modified', color='orange')
+    plt.legend(fontsize=8)
+    plt.axis('off')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+    visualizations['dct_visualization'] = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+    
+    # DWT Visualization
+    plt.figure(figsize=(6, 3))
+    # Create a simple wavelet decomposition visualization
+    t = np.linspace(0, 1, 100)
+    s = np.sin(2*np.pi*10*t) * np.exp(-5*t)
+    plt.plot(t, s)
+    plt.title('Wavelet Decomposition', fontsize=10)
+    plt.axis('off')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', dpi=100, bbox_inches='tight')
+    visualizations['dwt_visualization'] = base64.b64encode(buffer.getvalue()).decode()
+    plt.close()
+    
+    return visualizations
+
 # Compare different steganography techniques
 def compare_techniques(request):
     if request.method == 'POST' and request.FILES.get('file'):
@@ -528,6 +578,10 @@ def compare_techniques(request):
                 'file_type': file_type
             }
             
+            # Generate technique visualizations
+            visualizations = generate_technique_visualizations()
+            context.update(visualizations)  # Add visualizations to the context
+            
             return render(request, 'compare.html', context)
             
         except Exception as e:
@@ -544,7 +598,10 @@ def compare_techniques(request):
                 except OSError:
                     pass
     
-    return render(request, 'compare.html')
+    else:
+        # Add visualizations to the initial form view as well
+        visualizations = generate_technique_visualizations()
+        return render(request, 'compare.html', visualizations)
 
 # Function to allow users to download the encoded file
 def download_image(request, filename):
@@ -577,3 +634,12 @@ def get_content_type(filename):
         '.mov': 'video/quicktime'
     }
     return content_types.get(extension, 'application/octet-stream')
+
+def visualize_techniques(request):
+    """Display visualizations for steganography techniques across different media types"""
+    from .utils.visualization_utils import generate_all_visualizations
+    
+    # Generate all visualizations
+    visualizations = generate_all_visualizations()
+    
+    return render(request, 'visualize.html', visualizations)

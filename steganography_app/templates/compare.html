@@ -257,6 +257,44 @@
             border-color: var(--info-color);
             background: transparent;
         }
+        .technique-explanation {
+            padding: 1.5rem;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0.9), rgba(255,255,255,0.95));
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .technique-explanation:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .technique-features {
+            list-style: none;
+            padding-left: 0;
+        }
+        .technique-features li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .technique-features li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+        .visual-example {
+            background: rgba(248, 249, 250, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .visual-example img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -470,6 +508,62 @@
                         </div>
                     </div>
                     
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>How Each Technique Works</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="technique-explanation">
+                                                <h6><i class="fas fa-paint-brush text-primary me-2"></i>LSB (Least Significant Bit)</h6>
+                                                <p class="mb-3">LSB replaces the least significant bits of pixel values with message bits:</p>
+                                                <ul class="technique-features">
+                                                    <li>Highest capacity (can use multiple color channels)</li>
+                                                    <li>Fast encoding and decoding</li>
+                                                    <li>More susceptible to image modifications</li>
+                                                </ul>
+                                                <div class="visual-example text-center mt-3">
+                                                    <img src="data:image/png;base64,{{ lsb_visualization }}" class="img-fluid rounded" alt="LSB Visualization">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="technique-explanation">
+                                                <h6><i class="fas fa-wave-square text-warning me-2"></i>DCT (Discrete Cosine Transform)</h6>
+                                                <p class="mb-3">DCT works in the frequency domain by modifying image coefficients:</p>
+                                                <ul class="technique-features">
+                                                    <li>Better resistance to compression</li>
+                                                    <li>Moderate capacity</li>
+                                                    <li>More computationally intensive</li>
+                                                </ul>
+                                                <div class="visual-example text-center mt-3">
+                                                    <img src="data:image/png;base64,{{ dct_visualization }}" class="img-fluid rounded" alt="DCT Visualization">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="technique-explanation">
+                                                <h6><i class="fas fa-water text-info me-2"></i>DWT (Discrete Wavelet Transform)</h6>
+                                                <p class="mb-3">DWT decomposes image into frequency sub-bands:</p>
+                                                <ul class="technique-features">
+                                                    <li>High robustness against attacks</li>
+                                                    <li>Good balance of capacity and quality</li>
+                                                    <li>Preserves image quality better</li>
+                                                </ul>
+                                                <div class="visual-example text-center mt-3">
+                                                    <img src="data:image/png;base64,{{ dwt_visualization }}" class="img-fluid rounded" alt="DWT Visualization">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <hr class="my-4">
                     
                     <!-- Tab Navigation -->
